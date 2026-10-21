@@ -1,4 +1,4 @@
-# MG Studio · Site de commande (flyers, teasers, publicités)
+# 365DayAgency · Site de commande (flyers, teasers, publicités)
 
 Site vitrine avec rendu 3D (Three.js) et un onglet **Commander** où les clients décrivent leur besoin et laissent leurs coordonnées.
 
@@ -31,6 +31,6 @@ Netlify ou Vercel fonctionnent aussi : glissez-déposez le dossier, rien à conf
 
 ## 3. Personnaliser
 
-- Le nom « MG Studio » apparaît dans `index.html` et `commande.html` (logo, titre, pied de page).
+- Le nom « 365DayAgency » apparaît dans `index.html` et `commande.html` (logo, titre, pied de page).
 - Les réalisations (Soirée BOHO, vidéos salle de sport) utilisent des visuels de démonstration : remplacez les blocs `.thumb` par vos images.
 - Les flyers qui flottent dans la scène 3D se changent dans `js/scene.js` (liste `posters`).
