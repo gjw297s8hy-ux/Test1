@@ -1,0 +1,186 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #ph-ground {
+      position: absolute;
+      inset: 0;
+      background: var(--color-orange);
+    }
+    .ph-word {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .ph-line {
+      position: absolute;
+      left: 110px;
+      top: 50%;
+      font-family: var(--font-display), "Archivo Black", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 0.8;
+      white-space: nowrap;
+      color: var(--color-ink);
+    }
+    #ph-w2 .ph-line {
+      color: var(--color-ink);
+    }
+    #ph-w3 .ph-line {
+      color: var(--color-paper);
+    }
+    #ph-dep {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    #ph-dep-inner {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    #ph-plate-b {
+      color: var(--color-cobalt);
+    }
+    #ph-plate-a {
+      color: var(--color-ink);
+    }
+    .ph-l {
+      display: inline-block;
+    }
+    #ph-hole {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--color-cobalt);
+    }
+    #ph-flood {
+      position: absolute;
+      inset: 0;
+      background: var(--color-cobalt);
+    }
+  </style>
+  <div id="root" data-composition-id="phrase" data-width="1920" data-height="1080">
+    <div id="ph-ground"></div>
+
+    <div id="ph-w1" class="ph-word clip" data-start="0" data-duration="0.5" data-track-index="1">
+      <div class="ph-line" id="ph-w1-t">FAIS-MOI</div>
+    </div>
+    <div id="ph-w2" class="ph-word clip" data-start="0.5" data-duration="0.5" data-track-index="1">
+      <div class="ph-line" id="ph-w2-t">UNE VIDÉO</div>
+    </div>
+    <div id="ph-w3" class="ph-word clip" data-start="1" data-duration="0.5" data-track-index="1">
+      <div class="ph-line" id="ph-w3-t">QUI</div>
+    </div>
+
+    <div id="ph-dep" class="clip" data-start="1.5" data-duration="2.5" data-track-index="1" data-layout-allow-overflow data-layout-allow-overlap>
+      <div id="ph-dep-inner">
+        <div id="ph-hole"></div>
+        <div class="ph-line" id="ph-plate-b">
+          <span class="ph-l">D</span><span class="ph-l">É</span><span class="ph-l">P</span><span class="ph-l">O</span><span class="ph-l">T</span><span class="ph-l">E</span>
+        </div>
+        <div class="ph-line" id="ph-plate-a">
+          <span class="ph-l">D</span><span class="ph-l">É</span><span class="ph-l">P</span><span class="ph-l" id="ph-o">O</span><span class="ph-l">T</span><span class="ph-l">E</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="ph-flood-wrap" class="clip" data-start="3.9" data-duration="0.1" data-track-index="2">
+      <div id="ph-flood"></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const ORANGE = "#FF4B1F",
+        PAPER = "#F1ECE2",
+        INK = "#121212";
+
+      function fit(el, maxW, maxFs) {
+        el.style.fontSize = "100px";
+        const w = el.getBoundingClientRect().width;
+        const fs = Math.min(maxFs, (100 * maxW) / w);
+        el.style.fontSize = fs + "px";
+        // vertical centre on the cap height (Archivo Black caps ~0.72 em)
+        el.style.marginTop = -fs * 0.4 + "px";
+        return fs;
+      }
+
+      function build() {
+        fit(document.getElementById("ph-w1-t"), 1700, 520);
+        fit(document.getElementById("ph-w2-t"), 1700, 520);
+        fit(document.getElementById("ph-w3-t"), 1500, 760);
+        const fsA = fit(document.getElementById("ph-plate-a"), 1700, 560);
+        fit(document.getElementById("ph-plate-b"), 1700, 560);
+
+        // the O of DÉPOTE: its counter is the door to the next world
+        const inner = document.getElementById("ph-dep-inner").getBoundingClientRect();
+        const o = document.getElementById("ph-o").getBoundingClientRect();
+        const ocx = o.left - inner.left + o.width / 2;
+        const ocy = o.top - inner.top + o.height * 0.5 - fsA * 0.02;
+        const hole = document.getElementById("ph-hole");
+        const hw = o.width * 0.5,
+          hh = fsA * 0.56;
+        hole.style.width = hw + "px";
+        hole.style.height = hh + "px";
+        hole.style.left = ocx - hw / 2 + "px";
+        hole.style.top = ocy - hh / 2 + "px";
+
+        // ground: one ink per beat
+        tl.set("#ph-ground", { backgroundColor: ORANGE }, 0);
+        tl.set("#ph-ground", { backgroundColor: PAPER }, 0.5);
+        tl.set("#ph-ground", { backgroundColor: INK }, 1.0);
+        tl.set("#ph-ground", { backgroundColor: ORANGE }, 1.5);
+
+        // FAIS-MOI: already there at frame 0, settles
+        tl.fromTo("#ph-w1-t", { scale: 1.06, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.45, ease: "expo.out" }, 0);
+        // UNE VIDÉO: the whole line blurs in
+        tl.fromTo("#ph-w2-t", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" }, 0.5);
+        // QUI: punch-in
+        tl.fromTo("#ph-w3-t", { scale: 1.35, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.3, ease: "expo.out" }, 1.0);
+
+        // DÉPOTE: plate A prints letter by letter, then plate B lands off register
+        const la = document.querySelectorAll("#ph-plate-a .ph-l");
+        const lb = document.querySelectorAll("#ph-plate-b .ph-l");
+        la.forEach(function (l, i) {
+          tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 1.5 + i * 0.05);
+        });
+        tl.fromTo(lb, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 2.0);
+        tl.fromTo("#ph-plate-b", { x: 0, y: 0 }, { x: 12, y: 10, duration: 0.001 }, 2.0);
+        tl.fromTo("#ph-hole", { opacity: 0 }, { opacity: 1, duration: 0.001 }, 2.0);
+
+        // dive into the O
+        gsap.set("#ph-dep-inner", { transformOrigin: ocx + "px " + ocy + "px" });
+        tl.fromTo(
+          "#ph-dep-inner",
+          { x: 0, y: 0 },
+          { x: 960 - ocx, y: 540 - ocy, duration: 0.55, ease: "power2.inOut" },
+          3.2,
+        );
+        tl.fromTo("#ph-dep-inner", { scale: 1 }, { scale: 60, duration: 0.75, ease: "power3.in" }, 3.25);
+        tl.fromTo(
+          "#ph-dep-inner",
+          { filter: "blur(0px)" },
+          { keyframes: [{ filter: "blur(0px)", duration: 0 }, { filter: "blur(5px)", duration: 0.35 }, { filter: "blur(0px)", duration: 0.3 }], ease: "none" },
+          3.25,
+        );
+
+        window.__timelines["phrase"] = tl;
+      }
+
+      document.fonts.ready.then(function () {
+        Promise.all([
+          document.fonts.load("100px 'Archivo Black'"),
+        ]).then(build, build);
+      });
+    })();
+  </script>
+</template>

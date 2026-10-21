@@ -1,0 +1,137 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--color-orange);
+    }
+    .fn-big {
+      position: absolute;
+      left: 110px;
+      font-family: var(--font-display), "Archivo Black", sans-serif;
+      font-size: 230px;
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--color-ink);
+    }
+    #fn-a {
+      top: 250px;
+    }
+    #fn-b {
+      top: 490px;
+    }
+    #fn-b2 {
+      top: 490px;
+      color: var(--color-cobalt);
+    }
+    .fn-w {
+      display: inline-block;
+    }
+    #fn-made {
+      position: absolute;
+      left: 0;
+      top: 300px;
+      width: 1920px;
+      text-align: center;
+      font-family: var(--font-body), "Montserrat", sans-serif;
+      font-weight: 700;
+      font-size: 40px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-ink);
+    }
+    #fn-lock {
+      position: absolute;
+      left: 0;
+      top: 370px;
+      width: 1920px;
+      text-align: center;
+      font-family: var(--font-display), "Archivo Black", sans-serif;
+      font-size: 132px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--color-ink);
+    }
+    #fn-x {
+      color: var(--color-ink);
+    }
+    #fn-cmd {
+      position: absolute;
+      left: 50%;
+      top: 640px;
+      height: 108px;
+      padding: 0 46px;
+      border-radius: 18px;
+      background: var(--color-ink);
+      color: var(--color-paper);
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 600;
+      font-size: 46px;
+      line-height: 108px;
+      white-space: nowrap;
+    }
+    #fn-dollar {
+      color: var(--color-orange);
+    }
+    .fn-c {
+      display: inline;
+    }
+  </style>
+  <div id="root" data-composition-id="fin" data-width="1920" data-height="1080">
+    <div id="fn-p1" class="clip" data-start="0" data-duration="2.4" data-track-index="1" data-layout-allow-overlap>
+      <div class="fn-big" id="fn-a"><span class="fn-w">UNE</span> <span class="fn-w">PHRASE.</span></div>
+      <div class="fn-big" id="fn-b2"><span class="fn-w">UN</span> <span class="fn-w">FILM.</span></div>
+      <div class="fn-big" id="fn-b"><span class="fn-w">UN</span> <span class="fn-w">FILM.</span></div>
+    </div>
+
+    <div id="fn-p2" class="clip" data-start="2.35" data-duration="3.65" data-track-index="1">
+      <div id="fn-made">Fait en code avec</div>
+      <div id="fn-lock"><span id="fn-lock-in">CLAUDE <span id="fn-x">×</span> HYPERFRAMES</span></div>
+      <div id="fn-cmd"><span id="fn-dollar">$</span> <span id="fn-cmd-t"></span></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const CMD = "npx skills add heygen-com/hyperframes";
+
+      // une phrase. un film.
+      document.querySelectorAll("#fn-a .fn-w").forEach(function (w, i) {
+        tl.fromTo(w, { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" }, 0.12 + i * 0.1);
+      });
+      document.querySelectorAll("#fn-b .fn-w").forEach(function (w, i) {
+        tl.fromTo(w, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 0.62 + i * 0.12);
+      });
+      // the second plate prints off register on « un film »
+      document.querySelectorAll("#fn-b2 .fn-w").forEach(function (w, i) {
+        tl.fromTo(w, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 1.0 + i * 0.001);
+      });
+      tl.fromTo("#fn-b2", { x: 0, y: 0 }, { x: 14, y: 12, duration: 0.001 }, 1.0);
+      tl.to("#fn-p1 .fn-w", { opacity: 0, filter: "blur(10px)", duration: 0.18, ease: "power3.in", stagger: 0.03 }, 2.15);
+
+      // lockup wipes in, then the command types
+      tl.fromTo("#fn-made", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 2.4);
+      tl.fromTo("#fn-lock-in", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "expo.out" }, 2.5);
+      tl.fromTo("#fn-lock", { scale: 1.08 }, { scale: 1, duration: 0.6, ease: "expo.out" }, 2.5);
+
+      const cmdT = document.getElementById("fn-cmd-t");
+      for (let i = 0; i < CMD.length; i++) {
+        const s = document.createElement("span");
+        s.className = "fn-c";
+        s.textContent = CMD[i];
+        cmdT.appendChild(s);
+      }
+      tl.fromTo("#fn-cmd", { xPercent: -50, opacity: 0, scaleX: 0.2 }, { xPercent: -50, opacity: 1, scaleX: 1, duration: 0.35, ease: "expo.out" }, 3.0);
+      document.querySelectorAll(".fn-c").forEach(function (c, i) {
+        tl.fromTo(c, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 3.2 + i * 0.018);
+      });
+
+      window.__timelines["fin"] = tl;
+    })();
+  </script>
+</template>

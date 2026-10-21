@@ -1,0 +1,35 @@
+# SPEC — « Une phrase, un film »
+
+GOAL:    the viewer sees one sentence turn into type, 3D, data and a posted film in 30 s, and remembers
+         « une phrase → un film, tout en code ».
+OUTPUT:  HyperFrames, 1920 x 1080, 60 fps
+TIME:    30 s x 60 = 1 800 frames. 120 BPM -> 30 frames per beat, 120 per bar (2 s). 15 bars.
+LOOK:    screen-print poster. Four flat inks, no gradients on grounds:
+           orange #FF4B1F, cobalt #1F3BFF, paper #F1ECE2, ink #121212.
+         Every ground is one ink; type is ink on orange/paper, paper on cobalt/ink.
+         Accent = the ink not used by ground or type, one focus per frame (the O, the current bar, the button).
+         Display: Archivo Black 400, uppercase, tracking -0.02em, hero words 60-90% of frame width.
+         Numerals: League Gothic 400. Small copy: Montserrat 700, >= 34 px.
+         Medium: second plate printed 10 px off register (cobalt under ink) on hero words; paper grain 5 %.
+         3D: flat 3-tone toon shading in the same inks, hard shadow at 0.35.
+OBJECTS: the sentence (type), 2 000+ printed cubes forming DÉPOTE, a bar chart of this film's frames per scene,
+         a phone (black body, 44 px corner radius, notch, real-looking composer UI), a big arrow cursor (5 % frame).
+MOTION:  enter expo.out / power4.out; camera power2.inOut; exit and zoom-through power3.in.
+         Hits are tl.set at 0 ms. Springs: back.out(1.4) on position/scale only.
+         Word stagger 60-120 ms. Exits 40-50 % shorter than entrances.
+SHOTS:
+  0.0-4.0  PHRASE   one word per beat on a new ground (orange, paper, ink, orange); DÉPOTE prints its two plates;
+                    camera dives into the O whose counter is cobalt -> cobalt fills the frame.     [impacts per word]
+  4.0-10.0 MATIÈRE  cobalt ground; cubes fly in and assemble DÉPOTE (seeded delays), orbit 35° -> 0°;
+                    « N CUBES. ZÉRO CAMÉRA. »; a wave flips cubes orange -> paper; camera dives into a paper cube.
+  10.0-16.0 CHIFFRES paper ground; count-up 0 -> 1 800 « IMAGES, UNE PAR UNE »; bar chart of frames per scene,
+                    this scene's bar orange; whip left.                                            [pops, whoosh]
+  16.0-24.0 ÉCRAN   ink ground; phone lands from the whip; sentence typed in the composer, video attached;
+                    cursor clicks Publier -> button morphs into « Publié »; post plays; tap -> orange iris.
+  24.0-30.0 FIN     orange ground; « UNE PHRASE. » « UN FILM. »; riser -> lockup CLAUDE × HYPERFRAMES wipes in;
+                    the real install command types in and holds 2 s.
+BANNED:  dark void with small floating things; glow, bloom, particles as decoration; purple/blue gradients, glass;
+         cream + serif + mono-label look; everything centred; fade + slide-up on everything; titles that drift after
+         landing; HUD/corner brackets; three cards in a row; docked logo; click rings; invented engagement numbers.
+QA:      t=0 (thumbnail: FAIS-MOI fills frame), 3.9 (cobalt flood), 7.5 (voxel word readable), 11.6 (1 800),
+         14.8 (chart), 19.6 (click), 24.5, 29.5 (lockup + command).

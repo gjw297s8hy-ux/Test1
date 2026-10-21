@@ -1,0 +1,318 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--color-cobalt);
+    }
+    #mt-canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .mt-cap {
+      position: absolute;
+      left: 110px;
+      font-family: var(--font-display), "Archivo Black", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--color-paper);
+      white-space: nowrap;
+    }
+    #mt-cap1 {
+      top: 96px;
+      font-size: 96px;
+    }
+    #mt-cap2 {
+      top: 200px;
+      font-size: 96px;
+    }
+    .mt-w {
+      display: inline-block;
+    }
+    #mt-paper {
+      position: absolute;
+      inset: 0;
+      background: var(--color-paper);
+    }
+  </style>
+  <div id="root" data-composition-id="matiere" data-width="1920" data-height="1080">
+    <canvas id="mt-canvas" width="1920" height="1080"></canvas>
+
+    <div id="mt-caps" class="clip" data-start="2.1" data-duration="2.5" data-track-index="1">
+      <div class="mt-cap" id="mt-cap1"><span class="mt-w" id="mt-count">0000</span> <span class="mt-w">CUBES.</span></div>
+      <div class="mt-cap" id="mt-cap2"><span class="mt-w">ZÉRO</span> <span class="mt-w">CAMÉRA.</span></div>
+    </div>
+
+    <div id="mt-paper-wrap" class="clip" data-start="5.7" data-duration="0.3" data-track-index="2">
+      <div id="mt-paper"></div>
+    </div>
+  </div>
+  <script src="assets/vendor/three.min.js"></script>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const DUR = 6;
+
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      const lerp = (a, b, u) => a + (b - a) * u;
+      const expoOut = (u) => (u >= 1 ? 1 : 1 - Math.pow(2, -10 * u));
+      const backOut = (u) => {
+        const c1 = 1.4,
+          c3 = c1 + 1;
+        return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2);
+      };
+      const inOut2 = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+      const in3 = (u) => u * u * u;
+
+      function sampleWord() {
+        const c = document.createElement("canvas");
+        const g = c.getContext("2d");
+        const fs = 120;
+        g.font = fs + "px 'Archivo Black'";
+        const w = Math.ceil(g.measureText("DÉPOTE").width);
+        c.width = w + 20;
+        c.height = Math.ceil(fs * 1.3);
+        g.font = fs + "px 'Archivo Black'";
+        g.fillStyle = "#000";
+        g.textBaseline = "alphabetic";
+        g.fillText("DÉPOTE", 10, fs * 1.08);
+        const data = g.getImageData(0, 0, c.width, c.height).data;
+        const COLS = 96;
+        const step = w / COLS;
+        const cells = [];
+        for (let y = 0; y * step < c.height; y++) {
+          for (let x = 0; x * step < c.width; x++) {
+            const px = Math.floor(x * step + step / 2),
+              py = Math.floor(y * step + step / 2);
+            if (px >= c.width || py >= c.height) continue;
+            if (data[(py * c.width + px) * 4 + 3] > 140) cells.push([x, y]);
+          }
+        }
+        // where the O's left stroke sits, in cells
+        const oLeft = 10 + g.measureText("DÉP").width;
+        const oW = g.measureText("O").width;
+        cells.oStrokeX = (oLeft + oW * 0.16) / step;
+        return cells;
+      }
+
+      function build() {
+        const canvas = document.getElementById("mt-canvas");
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(1);
+        renderer.setSize(1920, 1080, false);
+        renderer.setClearColor(0x1f3bff, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(35, 1920 / 1080, 0.05, 2000);
+
+        // voxels
+        const cells = sampleWord();
+        let minX = 1e9,
+          maxX = -1e9,
+          minY = 1e9,
+          maxY = -1e9;
+        cells.forEach(([x, y]) => {
+          minX = Math.min(minX, x);
+          maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        });
+        const cx = (minX + maxX) / 2;
+        const LAYERS = 3;
+        const vox = [];
+        const rnd = mulberry32(20261021);
+        cells.forEach(([x, y]) => {
+          for (let z = 0; z < LAYERS; z++) {
+            const tx = x - cx,
+              ty = maxY - y + 0.5,
+              tz = -z;
+            const r1 = rnd(),
+              r2 = rnd(),
+              r3 = rnd(),
+              r4 = rnd();
+            vox.push({
+              tx,
+              ty,
+              tz,
+              sx: tx + (r1 - 0.5) * 60,
+              sy: ty + 70 + r2 * 60,
+              sz: tz + (r3 - 0.5) * 50 + 10,
+              rx: (r1 - 0.5) * 9,
+              ry: (r2 - 0.5) * 9,
+              rz: (r4 - 0.5) * 9,
+              // build left to right
+              d: 0.05 + ((tx - (minX - cx)) / (maxX - minX)) * 1.15 + r4 * 0.3,
+            });
+          }
+        });
+        const N = vox.length;
+        document.getElementById("mt-count").textContent = N.toLocaleString("fr-FR").replace(/ | /g, " ");
+        const H = maxY - minY + 1;
+
+        const grad = new Uint8Array([90, 90, 90, 255, 175, 175, 175, 255, 255, 255, 255, 255]);
+        const gradMap = new THREE.DataTexture(grad, 3, 1, THREE.RGBAFormat);
+        gradMap.needsUpdate = true;
+        gradMap.minFilter = THREE.NearestFilter;
+        gradMap.magFilter = THREE.NearestFilter;
+
+        const geo = new THREE.BoxGeometry(0.9, 0.9, 0.9);
+        const mat = new THREE.MeshToonMaterial({ color: 0xffffff, gradientMap: gradMap });
+        const mesh = new THREE.InstancedMesh(geo, mat, N);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        scene.add(mesh);
+        const ORANGE = new THREE.Color(0xff4b1f);
+        const PAPER = new THREE.Color(0xf1ece2);
+        const tmpC = new THREE.Color();
+        for (let i = 0; i < N; i++) mesh.setColorAt(i, ORANGE);
+
+        // floor that only shows the shadow, ink on cobalt
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.ShadowMaterial({ color: 0x121212, opacity: 0.38 }));
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.45;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        const key = new THREE.DirectionalLight(0xffffff, 0.62);
+        key.position.set(-50, 90, 70);
+        key.castShadow = true;
+        key.shadow.mapSize.set(2048, 2048);
+        const sc = key.shadow.camera;
+        sc.left = -90;
+        sc.right = 90;
+        sc.top = 90;
+        sc.bottom = -90;
+        sc.near = 1;
+        sc.far = 400;
+        key.shadow.bias = -0.0008;
+        scene.add(key);
+        scene.add(key.target);
+        key.target.position.set(0, 10, -20);
+
+        // the voxel the camera dives into: front layer, nearest the middle of the word
+        let dive = 0,
+          best = 1e9;
+        vox.forEach((v, i) => {
+          if (v.tz !== 0) return;
+          const dd = Math.abs(v.tx - (cells.oStrokeX - cx)) + Math.abs(v.ty - H * 0.5);
+          if (dd < best) {
+            best = dd;
+            dive = i;
+          }
+        });
+
+        const o = new THREE.Object3D();
+        const WAVE0 = 3.5,
+          WAVE1 = 4.7;
+        const xMin = minX - cx - 6,
+          xMax = maxX - cx + 6;
+
+        function camAt(t) {
+          // orbit around the word, then dive into one cube
+          const look = new THREE.Vector3(0, H * 0.66, -1);
+          const u = inOut2(clamp(t / 3.4, 0, 1));
+          const u2 = clamp((t - 3.4) / 1.4, 0, 1);
+          const yaw = lerp(-0.78, -0.3, u) + lerp(0, 0.12, u2);
+          const pitch = lerp(0.03, 0.12, u);
+          const dist = lerp(74, 106, u) + lerp(0, -5, u2);
+          const pos = new THREE.Vector3(
+            look.x + Math.sin(yaw) * Math.cos(pitch) * dist,
+            look.y + Math.sin(pitch) * dist,
+            look.z + Math.cos(yaw) * Math.cos(pitch) * dist,
+          );
+          if (t > 4.7) {
+            const uu = clamp((t - 4.7) / 1.25, 0, 1);
+            const k = uu * uu;
+            const v = vox[dive];
+            const tgt = new THREE.Vector3(v.tx, v.ty, v.tz);
+            const end = new THREE.Vector3(v.tx, v.ty, v.tz + 0.9);
+            pos.lerp(end, k);
+            look.lerp(tgt, inOut2(clamp(uu * 1.8, 0, 1)));
+          }
+          camera.position.copy(pos);
+          camera.lookAt(look);
+        }
+
+        function render(t) {
+          const xw = lerp(xMin, xMax, clamp((t - WAVE0) / (WAVE1 - WAVE0), 0, 1));
+          for (let i = 0; i < N; i++) {
+            const v = vox[i];
+            const u = clamp((t - v.d) / 0.75, 0, 1);
+            const ep = backOut(u);
+            const er = expoOut(u);
+            let x = lerp(v.sx, v.tx, er),
+              y = lerp(v.sy, v.ty, ep),
+              z = lerp(v.sz, v.tz, er);
+            // the wave: cubes jump as it passes and come down printed in paper
+            let bump = 0;
+            if (t > WAVE0 && t < WAVE1 + 0.6) {
+              const dx = v.tx - xw;
+              bump = Math.exp(-(dx * dx) / 30) * 3.2;
+              y += bump;
+              z += bump * 0.6;
+            }
+            o.position.set(x, y, z);
+            o.rotation.set(v.rx * (1 - er) + bump * 0.25, v.ry * (1 - er), v.rz * (1 - er));
+            o.scale.setScalar(u <= 0 ? 0.0001 : 1);
+            o.updateMatrix();
+            mesh.setMatrixAt(i, o.matrix);
+            if (t > WAVE0 - 0.1) {
+              tmpC.copy(v.tx < xw ? PAPER : ORANGE);
+              mesh.setColorAt(i, tmpC);
+            } else mesh.setColorAt(i, ORANGE);
+          }
+          mesh.instanceMatrix.needsUpdate = true;
+          mesh.instanceColor.needsUpdate = true;
+          camAt(t);
+          renderer.render(scene, camera);
+        }
+
+        const state = { t: 0 };
+        tl.fromTo(
+          state,
+          { t: 0 },
+          {
+            t: DUR,
+            duration: DUR,
+            ease: "none",
+            onUpdate: function () {
+              render(state.t);
+            },
+          },
+          0,
+        );
+
+        // caption: the real cube count, then the claim
+        const words = document.querySelectorAll(".mt-w");
+        words.forEach(function (w, i) {
+          tl.fromTo(w, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power4.out" }, 2.1 + i * 0.09);
+        });
+        tl.to(".mt-w", { opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power3.in", stagger: 0.04 }, 4.3);
+        tl.fromTo("#mt-paper", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.in" }, 5.72);
+
+        render(0);
+        window.__timelines["matiere"] = tl;
+      }
+
+      document.fonts.load("120px 'Archivo Black'").then(build, build);
+    })();
+  </script>
+</template>
