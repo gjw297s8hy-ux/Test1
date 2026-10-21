@@ -2,6 +2,11 @@
 
 Output: `renders/une-phrase-un-film.mp4` — 1920×1080, 60 fps, 30.0 s, 1 800 frames, H.264 + AAC 48 kHz, 23 MB.
 
+## v2 (person's notes: colours didn't go together; new end title)
+- Palette moved from four inks (orange, cobalt, paper, ink) to three: ink #111111, cream #F2EEE6, lime #C8F43A.
+- End card is now the offer « VOS VIDÉOS, FLYERS, TEASERS — À PRIX COÛTANT. » (read « Marc plutôt » as « marque
+  plutôt »). The « Claude × HyperFrames » lockup and the install command were removed: the film is now a promo.
+
 ## Creative calls
 - The 4 X reference posts could not be opened from the build sandbox (x.com is blocked by its network policy), so
   the look comes from the subject: a screen-print poster (four flat inks, Archivo Black, second plate off register).

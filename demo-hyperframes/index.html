@@ -2,10 +2,9 @@
 <html
   lang="fr"
   data-composition-variables='[
-    {"id":"color-orange","type":"color","label":"Orange","default":"#FF4B1F"},
-    {"id":"color-cobalt","type":"color","label":"Cobalt","default":"#1F3BFF"},
-    {"id":"color-paper","type":"color","label":"Paper","default":"#F1ECE2"},
-    {"id":"color-ink","type":"color","label":"Ink","default":"#121212"},
+    {"id":"color-lime","type":"color","label":"Accent","default":"#C8F43A"},
+    {"id":"color-cream","type":"color","label":"Cream","default":"#F2EEE6"},
+    {"id":"color-ink","type":"color","label":"Ink","default":"#111111"},
     {"id":"font-display","type":"string","label":"Display font","default":"Archivo Black"}
   ]'
 >
@@ -15,10 +14,9 @@
     <script src="assets/vendor/gsap.min.js"></script>
     <style>
       :root {
-        --color-orange: #ff4b1f;
-        --color-cobalt: #1f3bff;
-        --color-paper: #f1ece2;
-        --color-ink: #121212;
+        --color-lime: #c8f43a;
+        --color-cream: #f2eee6;
+        --color-ink: #111111;
         --font-display: "Archivo Black";
         --font-num: "League Gothic";
         --font-body: "Montserrat";
@@ -161,7 +159,6 @@
       <audio id="a-iris" class="clip" src="assets/sfx/whoosh.mp3" data-start="23.26" data-duration="0.57" data-volume="0.6" data-track-index="11"></audio>
       <audio id="a-rise" class="clip" src="assets/sfx/riser.mp3" data-start="24.4" data-duration="2.15" data-volume="0.6" data-track-index="12" data-media-start="0.9" data-fade-out="0.05"></audio>
       <audio id="a-lock" class="clip" src="assets/sfx/impact-bass-2.mp3" data-start="26.47" data-duration="2.0" data-volume="0.6" data-track-index="13" data-fade-out="1.2"></audio>
-      <audio id="a-type2" class="clip" src="assets/sfx/typing.mp3" data-start="26.75" data-duration="1.1" data-volume="0.45" data-track-index="11" data-fade-out="0.1"></audio>
     </div>
     <script>
       window.__timelines = window.__timelines || {};

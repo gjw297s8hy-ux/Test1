@@ -8,7 +8,7 @@
     #ph-ground {
       position: absolute;
       inset: 0;
-      background: var(--color-orange);
+      background: var(--color-lime);
     }
     .ph-word {
       position: absolute;
@@ -29,10 +29,10 @@
       color: var(--color-ink);
     }
     #ph-w2 .ph-line {
-      color: var(--color-ink);
+      color: var(--color-cream);
     }
     #ph-w3 .ph-line {
-      color: var(--color-paper);
+      color: var(--color-ink);
     }
     #ph-dep {
       position: absolute;
@@ -49,10 +49,10 @@
       height: 1080px;
     }
     #ph-plate-b {
-      color: var(--color-cobalt);
+      color: var(--color-cream);
     }
     #ph-plate-a {
-      color: var(--color-ink);
+      color: var(--color-lime);
     }
     .ph-l {
       display: inline-block;
@@ -60,12 +60,12 @@
     #ph-hole {
       position: absolute;
       border-radius: 50%;
-      background: var(--color-cobalt);
+      background: var(--color-ink);
     }
     #ph-flood {
       position: absolute;
       inset: 0;
-      background: var(--color-cobalt);
+      background: var(--color-ink);
     }
   </style>
   <div id="root" data-composition-id="phrase" data-width="1920" data-height="1080">
@@ -100,9 +100,9 @@
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      const ORANGE = "#FF4B1F",
-        PAPER = "#F1ECE2",
-        INK = "#121212";
+      const LIME = "#C8F43A",
+        CREAM = "#F2EEE6",
+        INK = "#111111";
 
       function fit(el, maxW, maxFs) {
         el.style.fontSize = "100px";
@@ -135,10 +135,10 @@
         hole.style.top = ocy - hh / 2 + "px";
 
         // ground: one ink per beat
-        tl.set("#ph-ground", { backgroundColor: ORANGE }, 0);
-        tl.set("#ph-ground", { backgroundColor: PAPER }, 0.5);
-        tl.set("#ph-ground", { backgroundColor: INK }, 1.0);
-        tl.set("#ph-ground", { backgroundColor: ORANGE }, 1.5);
+        tl.set("#ph-ground", { backgroundColor: LIME }, 0);
+        tl.set("#ph-ground", { backgroundColor: INK }, 0.5);
+        tl.set("#ph-ground", { backgroundColor: CREAM }, 1.0);
+        tl.set("#ph-ground", { backgroundColor: INK }, 1.5);
 
         // FAIS-MOI: already there at frame 0, settles
         tl.fromTo("#ph-w1-t", { scale: 1.06, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.45, ease: "expo.out" }, 0);

@@ -4,7 +4,7 @@
       position: absolute;
       inset: 0;
       overflow: hidden;
-      background: var(--color-paper);
+      background: var(--color-cream);
     }
     #ch-stage {
       position: absolute;
@@ -66,7 +66,8 @@
       background: var(--color-ink);
     }
     .ch-bar.ch-here {
-      background: var(--color-orange);
+      background: var(--color-lime);
+      box-shadow: inset 0 0 0 6px var(--color-ink);
     }
     .ch-val {
       position: absolute;
@@ -153,7 +154,7 @@
       );
       tl.fromTo("#ch-num", { scale: 0.86, transformOrigin: "0% 100%" }, { scale: 1, duration: 1.4, ease: "expo.out" }, 0.05);
       document.querySelectorAll(".ch-lw").forEach(function (w, i) {
-        tl.fromTo(w, { color: "#bdb6aa" }, { color: "#121212", duration: 0.12, ease: "none" }, 0.55 + i * 0.09);
+        tl.fromTo(w, { color: "#bdb6aa" }, { color: "#111111", duration: 0.12, ease: "none" }, 0.55 + i * 0.09);
       });
       // carry the count up into the heading
       tl.to("#ch-num", { scale: 0.13, x: 4, y: -40, filter: "blur(4px)", opacity: 0, duration: 0.3, ease: "power3.in" }, 1.75);
