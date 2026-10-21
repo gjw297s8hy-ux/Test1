@@ -20,10 +20,12 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   float sp = 0.004 + glitch * 0.025;
   vec3 c = vec3(texture2D(inputBuffer, u + vec2(sp, 0.0)).r, texture2D(inputBuffer, u).g, texture2D(inputBuffer, u - vec2(sp, 0.0)).b);
   float l = dot(c, vec3(0.299, 0.587, 0.114));
-  vec3 g = mix(c, vec3(l), 0.32);                       // désaturation partielle (le rouge reste présent)
-  g += vec3(-0.015, 0.02, 0.05) * pow(1.0 - l, 2.0);     // ombres bleu-acier
-  g += vec3(0.9, 0.95, 1.0) * max(0.0, l - 0.72) * 0.55; // blancs brûlés
-  g = (g - 0.5) * 1.12 + 0.5;
+  // DA rouge & noir : on garde les rouges, tout le reste passe en noir & blanc contrasté
+  float redness = smoothstep(0.04, 0.22, c.r - max(c.g, c.b));
+  vec3 g = mix(vec3(l), c * vec3(1.15, 0.85, 0.85), redness);
+  g = pow(max(g, 0.0), vec3(1.04));                        // noirs denses
+  g += vec3(1.0) * max(0.0, l - 0.78) * 0.45;              // blancs brûlés
+  g = (g - 0.35) * 1.1 + 0.35;
   outputColor = vec4(clamp(g, 0.0, 1.0), inputColor.a);
 }`;
 export class GradeGlitchEffect extends Effect {

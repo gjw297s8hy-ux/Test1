@@ -7,11 +7,11 @@ export type LetterAnim = (i: number, n: number) => {y?: number; z?: number; rx?:
 
 type Props = JSX.IntrinsicElements['group'] & {
   font: Font; text: string; size: number; depth?: number; tracking?: number;
-  material: THREE.Material | THREE.Material[]; anim?: LetterAnim; align?: 'center' | 'left';
+  material: THREE.Material | THREE.Material[]; anim?: LetterAnim; align?: 'center' | 'left'; castShadow?: boolean;
 };
 
 /** Texte extrudé lettre par lettre (biseau, pivot centré) pour une animation cinétique par glyphe. */
-export const Text3D: React.FC<Props> = ({font, text, size, depth = 0.25, tracking = 0, material, anim, align = 'center', ...rest}) => {
+export const Text3D: React.FC<Props> = ({font, text, size, depth = 0.25, tracking = 0, material, anim, align = 'center', castShadow = false, ...rest}) => {
   const glyphs = useMemo(() => {
     const scale = size / (font.data as any).resolution;
     let x = 0;
@@ -48,7 +48,7 @@ export const Text3D: React.FC<Props> = ({font, text, size, depth = 0.25, trackin
         return (
           <mesh key={i} geometry={g.geo} material={material as any}
             position={[g.x + (a.x ?? 0), a.y ?? 0, a.z ?? 0]} rotation={[a.rx ?? 0, a.ry ?? 0, 0]}
-            scale={[s, s, s]} visible={s > 0.001} />
+            scale={[s, s, s]} visible={s > 0.001} castShadow={castShadow} />
         );
       })}
     </group>
