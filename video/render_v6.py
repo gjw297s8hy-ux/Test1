@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 W, H, FPS, DUR = 1080, 1920, 30, 16.0
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "promo_abonnement_v6.mp4")
-HANDLE = "@toncompte"   # <- remplace par ton pseudo / numéro
+HANDLE = "@365daymentality"   # <- remplace par ton pseudo / numéro
 
 WHITE = (248, 248, 250); GREY = (150, 154, 168); ACC = (255, 122, 0); RED = (255, 70, 90)
 DARK = (14, 15, 20); GOLD = (255, 196, 40); OLIVE = (125, 50, 0)
@@ -370,7 +370,7 @@ def screen_chat(t):
     d.rectangle([0, 80, 520, 190], fill=(20, 22, 30))
     d.text((30, 135), "‹", font=font("b", 60), fill=WHITE, anchor="lm")
     d.ellipse([70, 100, 140, 170], fill=ACC); d.text((105, 136), "€", font=font("black", 40), fill=DARK, anchor="mm")
-    d.text((160, 104), "Abonnement 20 €", font=font("xb", 30), fill=WHITE)
+    d.text((160, 104), HANDLE, font=font("xb", 28), fill=WHITE)
     d.text((160, 146), "en ligne", font=font("sb", 22), fill=ACC)
     y = 230
     for t0, side, lines in MSGS:
