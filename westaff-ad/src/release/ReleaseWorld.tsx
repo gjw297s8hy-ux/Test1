@@ -13,12 +13,16 @@ import {ease, prog, mix, rng, clamp} from '../lib/anim';
 import type {Fonts} from '../scenes/types';
 import {REL, SH, beat} from './config';
 import {pending, frameTexture, setFrame} from './frames';
+import {GradeGlitchEffect} from './GradeGlitch';
 
 const C = REL.colors;
 const ISO_EL = Math.asin(1 / Math.sqrt(3)); // 35,26° : vraie isométrie
 const FACE = Math.PI / 4; // les objets « face caméra » sont tournés de 45°
 export const CUTS = [SH.B[0], SH.C[0], SH.D[0], SH.E[0]];
 const cutAmount = (t: number) => CUTS.reduce((a, b) => Math.max(a, Math.exp(-Math.pow((t - b) / 0.07, 2))), 0);
+/** Glitch : sur les raccords + quelques temps forts du plan clip (comme la référence). */
+const GLITCH_AT = [...CUTS, beat(16.6), beat(18), beat(19), beat(20.5)];
+const glitchAmount = (t: number) => GLITCH_AT.reduce((a, b) => Math.max(a, t > b - 0.1 && t < b + 0.14 ? 1 - Math.abs(t - b) / 0.14 : 0), 0);
 const shake = (t: number, at: number, amp: number) => (t >= at ? Math.exp(-(t - at) * 9) * amp : 0);
 
 // ---------- matériaux ----------
@@ -27,6 +31,8 @@ const mats = () => ({
   whiteChrome: new THREE.MeshPhysicalMaterial({color: '#f2efe9', metalness: 1, roughness: 0.16, clearcoat: 1, envMapIntensity: 1.8}),
   darkMetal: new THREE.MeshPhysicalMaterial({color: '#141217', metalness: 0.9, roughness: 0.35, clearcoat: 0.6}),
   neon: new THREE.MeshBasicMaterial({color: new THREE.Color(C.red).multiplyScalar(4), toneMapped: false}),
+  nameChrome: new THREE.MeshPhysicalMaterial({color: '#f4f1ec', metalness: 1, roughness: 0.15, clearcoat: 1, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0.12, envMapIntensity: 1.8}),
+  glowWhite: new THREE.MeshStandardMaterial({color: '#ffffff', emissive: new THREE.Color('#e9f2ff'), emissiveIntensity: 0.42, roughness: 0.25, metalness: 0.6}),
 });
 
 const asphaltTexture = () => {
@@ -54,8 +60,8 @@ const Platform: React.FC<{size: [number, number]; y?: number; m: ReturnType<type
 };
 
 /** Écran 3D (cadre métal + image vidéo), orienté vers la caméra. */
-const Screen: React.FC<{w: number; tex: THREE.Texture; m: ReturnType<typeof mats>; dim?: number} & JSX.IntrinsicElements['group']> = ({w, tex, m, dim = 1, ...rest}) => {
-  const h = (w * 3) / 4;
+const Screen: React.FC<{w: number; tex: THREE.Texture; m: ReturnType<typeof mats>; dim?: number; aspect?: number} & JSX.IntrinsicElements['group']> = ({w, tex, m, dim = 1, aspect = 4 / 3, ...rest}) => {
+  const h = w / aspect;
   const frame = useMemo(() => new RoundedBoxGeometry(w + 0.3, h + 0.3, 0.35, 4, 0.08), [w, h]);
   return (
     <group {...rest}>
@@ -104,7 +110,7 @@ const Backdrop: React.FC<{m: ReturnType<typeof mats>; t: number}> = ({m, t}) => 
     for (let i = 0; i < 140; i++) {
       const x = (r() - 0.5) * 44, z = (r() - 0.5) * 44;
       if (Math.abs(x) < 7.5 && Math.abs(z) < 7.5) continue;
-      if (x + z > 6) continue; // ne rien mettre entre la caméra et la scène
+      if (x + z > -6) continue; // ne rien mettre entre la caméra et la scène (ni devant le portrait)
       items.push({x, z, w: 1.2 + r() * 2.6, d: 1.2 + r() * 2.6, h: 1 + Math.pow(r(), 1.6) * 13, neon: r() < 0.6});
     }
     const box = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshPhysicalMaterial({color: '#2b2730', metalness: 0.7, roughness: 0.4, clearcoat: 0.5}), items.length);
@@ -126,6 +132,8 @@ const dropIn = (t: number, start: number, dur = 0.4) => {
 
 // ---------- caméra ----------
 type Cam = {target: [number, number, number]; zoom: number; az: number};
+const PORTRAIT: [number, number, number] = [5.6, 0, -5.6];
+const SHOT_T = [beat(14), beat(16.6), beat(19)];
 const camAt = (t: number): Cam => {
   const sway = Math.sin(t * 0.6) * 0.06;
   if (t < SH.A[1]) return {target: [0, 2.2, 0], zoom: mix(118, 140, ease.outCubic(prog(t, 0, 2.4))), az: FACE - 0.25 + ease.outCubic(prog(t, 0, 2.4)) * 0.25 + sway};
@@ -136,9 +144,8 @@ const camAt = (t: number): Cam => {
     const shots: [number, Cam][] = [
       [SH.D[0], {target: [0, 2.4, 0], zoom: 100, az: FACE - 0.18}],
       [beat(14), {target: [0, 3.3, 0], zoom: 150, az: FACE}],
-      [beat(17), {target: [0.4, 3.1, 0], zoom: 175, az: FACE + 0.28}],
-      [beat(19), {target: [-0.4, 3.1, 0], zoom: 175, az: FACE - 0.28}],
-      [beat(20), {target: [0, 2.6, 0], zoom: 108, az: FACE + 0.22}],
+      [beat(16.6), {target: [PORTRAIT[0], 3.3, PORTRAIT[2]], zoom: 158, az: FACE}],
+      [beat(19), {target: [1.6, 2.6, -1.6], zoom: 88, az: FACE + 0.2}],
     ];
     let i = shots.length - 1; while (i > 0 && t < shots[i][0]) i--;
     const [s0, a] = shots[i]; const b = shots[Math.min(i + 1, shots.length - 1)][1];
@@ -185,6 +192,9 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
   const clipTex = useMemo(() => [frameTexture(), frameTexture(), frameTexture()], []);
   const coverTex = useMemo(() => { const tx = new THREE.TextureLoader().load(staticFile(REL.cover)); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; return tx; }, []);
   const blur = useMemo(() => new RadialBlurEffect(), []);
+  const grade = useMemo(() => new GradeGlitchEffect(), []);
+  const photo = useMemo(() => Object.fromEntries(Object.entries(REL.photos).map(([k, src]) => { const tx = new THREE.TextureLoader().load(staticFile(src)); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; return [k, tx]; })) as Record<keyof typeof REL.photos, THREE.Texture>, []);
+  const gothic = fonts.gothic ?? fonts.display;
 
   // caméra orthographique isométrique
   const c = camAt(t);
@@ -195,7 +205,10 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
   cam.lookAt(...c.target);
   cam.zoom = c.zoom; cam.near = 0.1; cam.far = 200; cam.updateProjectionMatrix();
   const tr = cutAmount(t);
-  blur.set(tr * 0.18, 1 + tr * 1.2);
+  const gl2 = glitchAmount(t);
+  const whip = SHOT_T.reduce((a, b) => Math.max(a, Math.exp(-Math.pow((t - b) / 0.09, 2))), 0);
+  blur.set(Math.max(tr * 0.18, whip * 0.12), 1 + tr * 1.2);
+  grade.set(gl2, Math.floor(t * 30));
 
   // flux vidéo
   const rosePing = (x: number) => { const n = REL.rose.frames - 1; const k = Math.floor(x) % (2 * n); return k < n ? k : 2 * n - k; };
@@ -230,7 +243,7 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
           <group rotation-y={FACE}>
             <Screen w={5.4} tex={roseTex} m={m} position={[0, 2.95, -0.6]} scale={[1, Math.max(0.001, ease.outBack(prog(t, 0.05, 0.55))), 1]} />
             <Glow position={[0, 3, -1.5]} scale={8} color={C.ember} opacity={0.35} />
-            <Text3D font={fonts.display} text={REL.artist} size={1.05} depth={0.4} tracking={0.04} material={m.whiteChrome} position={[0, 0.6, 1.2]}
+            <Text3D font={fonts.display} text={REL.artist} size={1.05} depth={0.35} tracking={0.04} material={m.nameChrome} position={[0, 0.6, 1.2]}
               anim={(i) => dropIn(t, beat(1) + i * 0.085)} />
           </group>
           <Fire t={t} t0={0.6} origin={[0, 0.1, 0]} width={6} seed={4} />
@@ -265,7 +278,7 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
             <group rotation-y={FACE} position={[0, mix(mix(11, 0.2, fall) + bounce, 2.4, stand), 0]}>
               <group rotation-x={mix(0, Math.PI / 2 - 0.2, stand)}>
                 <mesh><boxGeometry args={[4.2, 0.32, 4.2]} /><primitive object={m.darkMetal} attach="material" /></mesh>
-                <mesh position-y={0.165} rotation-x={-Math.PI / 2}><planeGeometry args={[4.0, 4.0]} /><meshStandardMaterial map={coverTex} roughness={0.35} metalness={0.1} /></mesh>
+                <mesh position-y={0.165} rotation-x={-Math.PI / 2}><planeGeometry args={[4.0, 4.0]} /><meshStandardMaterial map={coverTex} emissiveMap={coverTex} emissive="#ffffff" emissiveIntensity={0.95} roughness={0.6} metalness={0} envMapIntensity={0.2} /></mesh>
               </group>
             </group>
             <mesh position-y={0.03} rotation-x={-Math.PI / 2} scale={mix(1, 3.6, ease.outCubic(ring))} visible={ring > 0 && ring < 1}>
@@ -273,7 +286,7 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
             </mesh>
             <Fire t={t} t0={land} origin={[0, 0.1, 0]} width={5} seed={11} />
             <group rotation-y={FACE}>
-              <Text3D font={fonts.display} text={REL.kicker} size={0.6} depth={0.35} material={m.whiteChrome} position={[0, 5.2, -0.6]}
+              <Text3D font={fonts.display} text={REL.kicker} size={0.6} depth={0.35} material={m.nameChrome} position={[0, 5.2, -0.6]}
                 anim={(i) => dropIn(t, beat(9) + i * 0.04, 0.35)} />
             </group>
           </group>
@@ -286,18 +299,25 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
           <group rotation-y={FACE}>
             <Screen w={7.0} tex={clipTex[0]} m={m} position={[0, 3.35, -1.2]} dim={mix(1, 0.4, titleK)} />
             <group visible={titleK > 0.001} position={[0, 3.35, 0.4]} scale={mix(1.8, 1, titleK)}>
-              <Text3D font={fonts.display} text={REL.titleLong[0]} size={1.0} depth={0.3} material={m.whiteChrome} position={[0, 0.75, 0]} />
-              <Text3D font={fonts.display} text={REL.titleLong[1]} size={1.0} depth={0.3} material={m.redChrome} position={[0, -0.85, 0]} />
+              <Text3D font={gothic} text="No Pain" size={1.0} depth={0.25} material={m.glowWhite} position={[0, 0.75, 0]} />
+              <Text3D font={gothic} text="No Gain" size={1.0} depth={0.25} material={m.glowWhite} position={[0, -0.95, 0]} />
             </group>
             <Text3D font={fonts.display} text={REL.artist} size={0.7} depth={0.45} tracking={0.05} material={m.redChrome} position={[0, 0.5, 1.6]}
               anim={(i) => dropIn(t, SH.D[0] + 0.1 + i * 0.06)} />
           </group>
-          {[[-3.6, 1.2, -1], [1.2, -3.6, 1]].map(([x, z, sgn], i) => (
-            <group key={i} position={[x, 0, z]} rotation-y={FACE + sgn * 0.12}>
-              <mesh position-y={0.9}><boxGeometry args={[3.0, 1.8, 2.2]} /><primitive object={m.darkMetal} attach="material" /></mesh>
-              <Screen w={2.9} tex={clipTex[i + 1]} m={m} position={[0, 2.95, 0]} />
+          {[[-3.6, 1.2, -1, photo.studio], [1.2, -3.6, 1, photo.duo]].map(([x, z, sgn, tx], i) => (
+            <group key={i} position={[x as number, 0, z as number]} rotation-y={FACE + (sgn as number) * 0.12}>
+              <mesh position-y={0.6}><boxGeometry args={[2.6, 1.2, 1.8]} /><primitive object={m.darkMetal} attach="material" /></mesh>
+              <Screen w={2.4} aspect={3 / 4} tex={tx as THREE.Texture} m={m} dim={1.35} position={[0, 2.85, 0]} />
             </group>
           ))}
+          {/* dalle-portrait (photo de l'artiste) + nom en gothique lumineux */}
+          <group position={PORTRAIT} rotation-y={FACE}>
+            <Platform size={[5, 3.5]} m={m} tex={asphalt} />
+            <Screen w={3.3} aspect={3 / 4} tex={photo.profile} m={m} dim={1.9} position={[0, 2.6, -0.4]} />
+            <Text3D font={fonts.display} text={REL.artist} size={0.78} depth={0.3} tracking={0.05} material={m.nameChrome} position={[0, 0.8, 0.9]}
+              anim={(i) => dropIn(t, beat(16.6) + 0.1 + i * 0.06, 0.35)} />
+          </group>
           <Fire t={t} t0={SH.D[0]} origin={[0, 0.1, -3]} width={10} seed={13} />
         </group>
       )}
@@ -308,12 +328,12 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
           <group rotation-y={FACE}>
             <group position={[0, 5.0, -0.6]} rotation-x={-0.12} scale={ease.outBack(prog(t, SH.E[0], SH.E[0] + 0.5))}>
               <mesh position-z={-0.17}><boxGeometry args={[3.7, 3.7, 0.3]} /><primitive object={m.darkMetal} attach="material" /></mesh>
-              <mesh><planeGeometry args={[3.5, 3.5]} /><meshStandardMaterial map={coverTex} emissiveMap={coverTex} emissive="#ffffff" emissiveIntensity={0.55} roughness={0.35} /></mesh>
+              <mesh><planeGeometry args={[3.5, 3.5]} /><meshStandardMaterial map={coverTex} emissiveMap={coverTex} emissive="#ffffff" emissiveIntensity={0.95} roughness={0.6} envMapIntensity={0.2} /></mesh>
             </group>
             <Glow position={[0, 5.0, -1.4]} scale={8} color={C.red} opacity={0.45} />
             <Text3D font={fonts.display} text={REL.title} size={1.2} depth={0.38} tracking={0.03} material={m.redChrome} position={[0, 2.05, 0.4]}
               anim={(i) => dropIn(t, SH.E[0] + 0.25 + i * 0.08, 0.45)} />
-            <Text3D font={fonts.display} text={REL.artist} size={0.58} depth={0.32} tracking={0.08} material={m.whiteChrome} position={[0, 0.88, 0.4]}
+            <Text3D font={fonts.display} text={REL.artist} size={0.58} depth={0.3} tracking={0.08} material={m.nameChrome} position={[0, 0.88, 0.4]}
               anim={(i) => dropIn(t, SH.E[0] + 0.6 + i * 0.05)} />
             <Text3D font={fonts.bold} text={REL.cta} size={0.26} depth={0.25} tracking={0.12} material={m.whiteChrome} position={[0, 0.2, 0.4]}
               anim={(i) => dropIn(t, SH.E[0] + 1.0 + i * 0.025, 0.3)} />
@@ -328,6 +348,7 @@ export const ReleaseWorld: React.FC<{fonts: Fonts}> = ({fonts}) => {
         <Vignette offset={0.25} darkness={0.8} />
         <Noise premultiply blendFunction={BlendFunction.SOFT_LIGHT} opacity={0.4} />
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+        <primitive object={grade} dispose={null} />
       </EffectComposer>
       <FrameDriver />
     </>

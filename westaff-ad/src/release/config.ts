@@ -1,6 +1,7 @@
 /** Teaser de sortie « NPNG » — O'NEAL. Tout le texte et le timing sont éditables ici. */
 export const REL = {
   artist: "O'NEAL",
+  artistGothic: "O'Neal", // version gothique (minuscules : plus lisible)
   title: 'NPNG',
   titleLong: ['NO PAIN', 'NO GAIN'],
   kicker: 'NOUVEAU SON',
@@ -11,6 +12,7 @@ export const REL = {
   clip: {dir: 'npng/clip', frames: 416, fps: 30},
   rose: {dir: 'npng/rose', frames: 34, fps: 30},
   cover: 'npng/cover.jpg',
+  photos: {studio: 'npng/photo_studio.jpg', duo: 'npng/photo_duo.jpg', profile: 'npng/photo_profile.jpg'},
   audio: 'npng/soundtrack.wav',
 };
 /** Grille rythmique mesurée sur le morceau (≈118 BPM) : temps k → secondes. */

@@ -6,13 +6,13 @@ import {preloadImages} from './assets';
 
 /** Charge une police OTF/TTF en Font three.js (glyphes extrudables) + l'enregistre pour le Canvas 2D. */
 export const useFonts = () => {
-  const [fonts, setFonts] = useState<{display: Font; bold: Font} | null>(null);
+  const [fonts, setFonts] = useState<{display: Font; bold: Font; gothic: Font} | null>(null);
   const [handle] = useState(() => delayRender('fonts'));
   useEffect(() => {
-    const load3D = async (file: string) => {
+    const load3D = async (file: string, cff = true) => {
       const buf = await (await fetch(staticFile(file))).arrayBuffer();
       const loader = new TTFLoader();
-      loader.reversed = true; // contours CFF (OTF) : sens inverse des TrueType → trous des lettres corrects
+      loader.reversed = cff; // contours CFF (OTF) : sens inverse des TrueType → trous des lettres corrects
       const json = loader.parse(buf);
       return new FontLoader().parse(json);
     };
@@ -24,13 +24,14 @@ export const useFonts = () => {
     Promise.all([
       load3D('fonts/InterDisplay-Black.otf'),
       load3D('fonts/Inter-ExtraBold.otf'),
+      load3D('fonts/UnifrakturMaguntia.woff', false),
       load2D('WDisplay', 'fonts/InterDisplay-Black.otf'),
       load2D('WBold', 'fonts/Inter-ExtraBold.otf'),
       load2D('WSemi', 'fonts/Inter-SemiBold.otf'),
       load2D('WMedium', 'fonts/Inter-Medium.otf'),
       preloadImages(),
-    ]).then(([display, bold]) => {
-      setFonts({display, bold});
+    ]).then(([display, bold, gothic]) => {
+      setFonts({display, bold, gothic} as any);
       continueRender(handle);
     });
   }, [handle]);
