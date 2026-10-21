@@ -137,7 +137,7 @@ const SHOT_T = [beat(14), beat(16.6), beat(19)];
 const camAt = (t: number): Cam => {
   const sway = Math.sin(t * 0.6) * 0.06;
   if (t < SH.A[1]) return {target: [0, 2.2, 0], zoom: mix(118, 140, ease.outCubic(prog(t, 0, 2.4))), az: FACE - 0.25 + ease.outCubic(prog(t, 0, 2.4)) * 0.25 + sway};
-  if (t < SH.B[1]) return {target: [0, 2.7, 0], zoom: mix(150, 172, prog(t, SH.B[0], SH.B[1])), az: FACE + sway};
+  if (t < SH.B[1]) return {target: [0, 2.7, 0], zoom: mix(118, 132, prog(t, SH.B[0], SH.B[1])), az: FACE + sway};
   if (t < SH.C[1]) return {target: [0, mix(1.0, 1.8, ease.inOutCubic(prog(t, beat(9.5), SH.C[1]))), 0], zoom: mix(122, 138, prog(t, SH.C[0], SH.C[1])), az: FACE + 0.12 * Math.sin(t) };
   if (t < SH.D[1]) {
     // recadrages sur les temps forts
