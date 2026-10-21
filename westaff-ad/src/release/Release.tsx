@@ -4,11 +4,13 @@ import {ThreeCanvas} from '@remotion/three';
 import * as THREE from 'three';
 import {useFonts} from '../three/fonts';
 import {ReleaseWorld, CUTS, IMPACTS} from './ReleaseWorld';
+import {PostWorld} from './PostWorld';
 import {REL, SH} from './config';
 import {ease, prog} from '../lib/anim';
 
+const PLATFORMS_Y_PR = 1430;
 /** Teaser vertical « nouveau son » en 3D isométrique (caméra orthographique). */
-export const Release: React.FC<{withAudio: boolean}> = ({withAudio}) => {
+export const Release: React.FC<{withAudio: boolean; photoreal?: boolean}> = ({withAudio, photoreal = false}) => {
   const {width, height, fps} = useVideoConfig();
   const t = useCurrentFrame() / fps;
   const fonts = useFonts();
@@ -20,13 +22,14 @@ export const Release: React.FC<{withAudio: boolean}> = ({withAudio}) => {
       {fonts && (
         <ThreeCanvas width={width} height={height} frameloop="never" dpr={1} orthographic
           gl={{antialias: false, preserveDrawingBuffer: true, toneMapping: THREE.NoToneMapping, outputColorSpace: THREE.SRGBColorSpace}}
-          camera={{zoom: 100, position: [20, 20, 20], near: 0.1, far: 200}}>
-          <ReleaseWorld fonts={fonts} />
+          camera={photoreal ? {zoom: 1, position: [0, 0, 10], near: 0.1, far: 100} : {zoom: 100, position: [20, 20, 20], near: 0.1, far: 200}}>
+          {photoreal ? <PostWorld /> : <ReleaseWorld fonts={fonts} />}
         </ThreeCanvas>
       )}
       {/* plateformes d'écoute (2D, lisibilité maximale) */}
       {fonts && t > SH.E[0] && (
-        <div style={{position: 'absolute', left: 0, right: 0, top: 1405, textAlign: 'center', opacity: plat, transform: `translateY(${(1 - plat) * 20}px)`,
+        // (position ajustée selon la version)
+        <div style={{position: 'absolute', left: 0, right: 0, top: photoreal ? PLATFORMS_Y_PR : 1405, textAlign: 'center', opacity: plat, transform: `translateY(${(1 - plat) * 20}px)`,
           fontFamily: 'WSemi', fontSize: 34, letterSpacing: '0.04em', color: 'rgba(244,241,236,0.9)', textShadow: '0 4px 20px rgba(0,0,0,0.8)'}}>
           {REL.platforms.split('•').map((p, i, a) => <span key={i}>{p.trim()}{i < a.length - 1 && <span style={{color: REL.colors.red, margin: '0 16px'}}>•</span>}</span>)}
         </div>

@@ -27,12 +27,12 @@ const FACE = Math.PI / 4;
 const HALF = 4.5; // demi-taille du diorama
 export const CUTS = [SH.B[0], SH.C[0], SH.D[0], SH.E[0]];
 export const IMPACTS = [SH.B[0], beat(5), SH.C[0] + 0.28, SH.E[0]];
-const near = (t: number, list: number[], w: number) => list.reduce((a, b) => Math.max(a, Math.exp(-Math.pow((t - b) / w, 2))), 0);
+export const near = (t: number, list: number[], w: number) => list.reduce((a, b) => Math.max(a, Math.exp(-Math.pow((t - b) / w, 2))), 0);
 const GLITCH_AT = [...CUTS, beat(16.6), beat(19)];
-const glitchAmount = (t: number) => GLITCH_AT.reduce((a, b) => Math.max(a, t > b - 0.1 && t < b + 0.14 ? 1 - Math.abs(t - b) / 0.14 : 0), 0);
+export const glitchAmount = (t: number) => GLITCH_AT.reduce((a, b) => Math.max(a, t > b - 0.1 && t < b + 0.14 ? 1 - Math.abs(t - b) / 0.14 : 0), 0);
 const shake = (t: number, at: number, amp: number) => (t >= at ? Math.exp(-(t - at) * 9) * amp : 0);
 const PORTRAIT: [number, number, number] = [8.2, 0, -8.2];
-const SHOT_T = [beat(14), beat(16.6), beat(19)];
+export const SHOT_T = [beat(14), beat(16.6), beat(19)];
 
 // ---------- matériaux ----------
 const useMats = () => useMemo(() => {

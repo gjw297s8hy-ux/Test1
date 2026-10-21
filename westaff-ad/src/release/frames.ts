@@ -8,8 +8,8 @@ import {staticFile} from 'remotion';
 export const pending: Promise<void>[] = [];
 const imgCache = new Map<string, HTMLImageElement>();
 export const frameTexture = () => { const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; return t; };
-export const setFrame = (tex: THREE.Texture, dir: string, idx: number) => {
-  const url = staticFile(`${dir}/f${String(idx + 1).padStart(3, '0')}.jpg`);
+export const setFrame = (tex: THREE.Texture, dir: string, idx: number, pad = 3) => {
+  const url = staticFile(`${dir}/f${String(idx + 1).padStart(pad, '0')}.jpg`);
   if ((tex as any).userData.url === url) return;
   (tex as any).userData.url = url;
   const ready = imgCache.get(url);
