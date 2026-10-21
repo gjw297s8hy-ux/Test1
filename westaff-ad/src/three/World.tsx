@@ -5,7 +5,7 @@ import {useCurrentFrame, useVideoConfig, delayRender, continueRender} from 'remo
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {EffectComposer, Bloom, Vignette, ChromaticAberration, Noise, ToneMapping, SMAA} from '@react-three/postprocessing';
 import {ToneMappingMode, BlendFunction} from 'postprocessing';
-import {T} from '../brand';
+import {T, legacyTime} from '../brand';
 import {RadialBlurEffect} from './RadialBlur';
 import {transitionAmount} from '../overlay/Overlays';
 import type {Fonts, CamState, SceneLook} from '../scenes/types';
@@ -15,11 +15,13 @@ import {Concert, concertCamera, concertLook} from '../scenes/Concert';
 import {Theatre, theatreCamera, theatreLook} from '../scenes/Theatre';
 import {Hero, heroCamera, heroLook} from '../scenes/Hero';
 import {BrandScene, brandCamera, brandLook} from '../scenes/Brand';
+import {Leagues, leaguesCamera, leaguesLook} from '../scenes/Leagues';
 
 type Def = {key: keyof typeof T; C: React.FC<{t: number; fonts: Fonts}>; cam: (t: number) => CamState; look: SceneLook};
 const SCENES: Def[] = [
   {key: 'intro', C: Intro, cam: introCamera, look: introLook},
   {key: 'stadium', C: Stadium, cam: stadiumCamera, look: stadiumLook},
+  {key: 'leagues', C: Leagues, cam: leaguesCamera, look: leaguesLook},
   {key: 'concert', C: Concert, cam: concertCamera, look: concertLook},
   {key: 'theatre', C: Theatre, cam: theatreCamera, look: theatreLook},
   {key: 'hero', C: Hero, cam: heroCamera, look: heroLook},
@@ -52,7 +54,8 @@ export const World: React.FC<{fonts: Fonts}> = ({fonts}) => {
   }, [gl, scene]);
 
   const def = SCENES.find((s) => t >= T[s.key][0] && t < T[s.key][1]) ?? SCENES[SCENES.length - 1];
-  const local = t; // les scènes reçoivent le temps global (secondes)
+  // la scène insérée reçoit le temps réel ; les autres leur temps « historique » (sans l'insertion)
+  const local = def.key === 'leagues' ? t : legacyTime(t);
   const c = def.cam(local);
   const cam = camera as THREE.PerspectiveCamera;
   cam.position.set(...c.pos);

@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 """
-Bande-son originale (générée, donc libre de droits) — 30 s, 120 BPM, 48 kHz stéréo.
-Synchronisée sur les scènes : 4 s (stade), 9 s (concert), 14 s (spectacle), 18 s (billets), 24 s (marque).
+Bande-son originale (générée, donc libre de droits) — 35 s, 120 BPM, 48 kHz stéréo.
+Synchronisée sur les scènes : 4 s (stade), 9 s (championnats), 14 s (concert), 19 s (spectacle), 23 s (billets), 29 s (marque).
+Les événements écrits en temps « historique » (avant l'insertion de la scène championnats) sont décalés de +5 s au-delà de 9 s.
 Usage : python3 scripts/make_audio.py  → public/audio/soundtrack.wav
 """
 import numpy as np, wave, os, subprocess
 from scipy import signal
 
-SR = 48000; DUR = 30.0; N = int(SR * DUR); BPM = 120; BEAT = 60 / BPM; BAR = 4 * BEAT
+SR = 48000; DUR = 35.0; INS, SHIFT = 9.0, 5.0; RAW = [False]; N = int(SR * DUR); BPM = 120; BEAT = 60 / BPM; BAR = 4 * BEAT
 rng = np.random.default_rng(2024)
 t_all = np.arange(N) / SR
 
 def buf(): return np.zeros((N, 2))
 def at(sec): return int(round(sec * SR))
 def place(dst, x, sec, gain=1.0, pan=0.0):
+    if not RAW[0] and sec >= INS - 1e-9: sec += SHIFT
     i = at(sec)
     if i >= N: return
     x = x[: N - i]
@@ -179,11 +181,24 @@ for k, s in enumerate((20.55, 20.95, 21.35)): place(fx, blip(note(84 - k * 5)), 
 place(fx, whoosh(0.8, 500, 7000), 18.1, 0.5)
 place(music, pad([46, 53, 58, 62], 18.0, 6.0, g=0.07, bright=2400), 18.0)
 
-# Montées + impacts aux raccords
-for tr in (4.0, 9.0, 14.0, 18.0, 24.0):
+# Montées + impacts aux raccords (temps réels)
+RAW[0] = True
+for tr in (4.0, 9.0, 14.0, 19.0, 23.0, 29.0):
     place(fx, riser(1.0 if tr != 4.0 else 0.6), tr - (1.0 if tr != 4.0 else 0.6), 0.45)
-    place(fx, impact(0.9 if tr in (4.0, 24.0) else 0.7), tr)
+    place(fx, impact(0.9 if tr in (4.0, 29.0) else 0.7), tr)
     place(fx, whoosh(0.5, 800, 8000), tr - 0.25, 0.4)
+
+# Scène championnats 9-14 (temps réels) : groove + « clac » à chaque écran + son de la vidéo des clubs
+drum_section(9.0, 13.5)
+groove(9.0, 13.5, stabs=True, arps=False)
+for k in range(5): place(fx, whoosh(0.35, 900, 9000), 9.0 + k * 0.5 + 0.2, 0.35); place(fx, blip(note(76 + (k % 2) * 7)), 9.0 + k * 0.5 + 0.45, 0.6)
+place(music, pad([50, 57, 62, 65], 9.0, 5.0, g=0.07, bright=2000), 9.0)
+import wave as _w
+with _w.open(os.path.join(os.path.dirname(__file__), '..', 'assets_src', 'clubs_audio.wav')) as w_:
+    clubs = np.frombuffer(w_.readframes(w_.getnframes()), dtype='<i2').reshape(-1, w_.getnchannels()).astype(float) / 32768
+if clubs.shape[1] == 1: clubs = np.repeat(clubs, 2, axis=1)
+place(sides, clubs, 10.36, 0.9)
+RAW[0] = False
 
 # Marque 24-30 : carillon logo + nappe finale + bascule CTA
 place(music, pad([50, 57, 62, 64, 69], 24.0, 6.0, g=0.15, bright=2000, attack=0.4), 24.0)
@@ -201,8 +216,8 @@ def reverb(x, d=2.4, mix_=0.25):
     return x + wet * mix_
 # sidechain : la musique « respire » sur la grosse caisse
 kenv = np.zeros(N)
-for s in np.arange(0, 30, BEAT):
-    if 4 <= s < 8.5 or 9 <= s < 13.5 or 18 <= s < 23.5:
+for s in np.arange(0, DUR, BEAT):
+    if 4 <= s < 8.5 or 9 <= s < 13.5 or 14 <= s < 18.5 or 23 <= s < 28.5:
         i = at(s); L_ = min(N - i, int(0.3 * SR)); kenv[i:i + L_] = np.maximum(kenv[i:i + L_], np.exp(-np.arange(L_) / SR * 12))
 duck = 1 - 0.55 * kenv
 music *= duck[:, None]; sides *= (1 - 0.3 * kenv)[:, None]

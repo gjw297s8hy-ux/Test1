@@ -6,6 +6,7 @@ import {Glow, pointsMaterial} from '../three/fx';
 import {goldBrushed, goldPolished, chrome} from '../three/materials';
 import {ease, prog, mix, rng} from '../lib/anim';
 import {BRAND} from '../brand';
+import {IMG} from '../three/assets';
 import type {Fonts, CamState, SceneLook} from './types';
 
 export const brandLook: SceneLook = {background: '#020205', env: 0.7, exposure: 1.0, bloom: 1.15};
@@ -58,6 +59,21 @@ export const BrandScene: React.FC<{t: number; fonts: Fonts}> = ({t, fonts}) => {
   };
   const tk = ease.outBack(prog(s, 0.1, 1.2));
   const lightX = mix(-3, 3, ease.inOutSine(prog(s, 1.0, 2.4)));
+  const logoMat = useMemo(() => {
+    const tx = new THREE.Texture(IMG.logo); tx.colorSpace = THREE.SRGBColorSpace; tx.needsUpdate = true;
+    return new THREE.ShaderMaterial({
+      uniforms: {uMap: {value: tx}, uSweep: {value: -1}, uO: {value: 0}},
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} `,
+      fragmentShader: `uniform sampler2D uMap; uniform float uSweep, uO; varying vec2 vUv;
+        void main(){ vec3 c = texture2D(uMap, vUv).rgb; c = pow(c, vec3(2.2));
+          float d = vUv.x*0.7 + vUv.y*0.5 - uSweep; float band = exp(-d*d*60.0);
+          float lum = dot(c, vec3(0.3,0.59,0.11));
+          gl_FragColor = vec4((c*1.15 + vec3(1.0,0.9,0.7)*band*lum*2.5)*uO, 1.0); }`,
+    });
+  }, []);
+  logoMat.uniforms.uSweep.value = mix(-0.4, 1.6, ease.inOutSine(prog(s, 1.0, 2.2)));
+  logoMat.uniforms.uO.value = ease.outCubic(prog(s, 0.15, 0.9));
 
   return (
     <group>
@@ -67,11 +83,16 @@ export const BrandScene: React.FC<{t: number; fonts: Fonts}> = ({t, fonts}) => {
       <pointLight position={[-2.5, 1, -1.5]} intensity={25} color={BRAND.colors.electric} />
       <pointLight position={[2.5, 1, -1.5]} intensity={25} color={BRAND.colors.violet} />
       {/* halo */}
-      <mesh position={[0, 0.95, -1.2]} material={res.rays}><planeGeometry args={[7, 7]} /></mesh>
-      <mesh position={[0, 0.95, -0.3]} scale={mix(0.2, 1, ringE)} rotation-x={0.0}><torusGeometry args={[0.42, 0.006, 12, 160]} /><primitive object={res.ringMat} attach="material" /></mesh>
-      <Glow position={[0, 0.95, -1]} scale={mix(0.5, 2.6, ringE)} color={BRAND.colors.gold} opacity={0.4} />
+      <mesh position={[0, 0.78, -1.2]} material={res.rays}><planeGeometry args={[7, 7]} /></mesh>
+      <mesh position={[0, 0.78, -0.3]} scale={mix(0.2, 1, ringE)} rotation-x={0.0}><torusGeometry args={[0.78, 0.006, 12, 200]} /><primitive object={res.ringMat} attach="material" /></mesh>
+      <Glow position={[0, 0.78, -1]} scale={mix(0.5, 3.2, ringE)} color={BRAND.colors.gold} opacity={0.3} />
       <Glow position={[0, 0.36, -1.4]} scale={5.5} color={BRAND.colors.violet} opacity={0.25 * ringE} />
-      {/* emblème billet */}
+      {/* logo fourni (fond noir → fusion additive) avec balayage lumineux */}
+      <mesh position={[0, 0.78, 0.1]} rotation={[0, Math.sin(t * 0.7) * 0.08, 0]} scale={mix(0.6, 1, ease.outBack(prog(s, 0.2, 1.1)))}>
+        <planeGeometry args={[1.42, 1.42]} />
+        <primitive object={logoMat} attach="material" />
+      </mesh>
+      {false && <group>{/* ancien emblème billet + logotype 3D (désactivés : remplacés par le logo fourni) */}
       <Ticket kind="master" position={[0, 0.95, 0]} rotation={[0.1, (1 - tk) * Math.PI * 3 + Math.sin(t * 0.9) * 0.25, Math.PI / 2]} scale={0.26 * Math.max(0.001, tk)}
         sweep={mix(-0.5, 1.5, prog(s, 1.2, 2.2))} time={t} holo={0.35} emissive={0.35} />
       {/* logotype 3D */}
@@ -79,6 +100,7 @@ export const BrandScene: React.FC<{t: number; fonts: Fonts}> = ({t, fonts}) => {
       <Text3D font={fonts.bold} text={BRAND.nameSub} size={0.058} depth={0.25} tracking={0.8} material={res.silver} anim={word(0.9)} position={[0, 0.17, 0]} />
       <mesh position={[-0.42, 0.175, 0]} scale-x={ease.outCubic(prog(s, 1.2, 1.8))}><boxGeometry args={[0.12, 0.005, 0.005]} /><primitive object={res.gold} attach="material" /></mesh>
       <mesh position={[0.42, 0.175, 0]} scale-x={ease.outCubic(prog(s, 1.2, 1.8))}><boxGeometry args={[0.12, 0.005, 0.005]} /><primitive object={res.gold} attach="material" /></mesh>
+      </group>}
       <points geometry={res.g} material={res.m} frustumCulled={false} />
     </group>
   );

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {BRAND} from '../brand';
 import {TICKET} from './ticket';
+import {IMG} from './assets';
 
 export type TicketKind = 'master' | 'football' | 'concert' | 'show';
 const W = 1024, H = 2560;
@@ -95,8 +96,20 @@ export const makeTicketArt = (kind: TicketKind, accent = BRAND.colors.gold) => {
   g.fillStyle = goldGrad(g, 0, 140, W, 220); g.font = '800 54px WBold'; g.textBaseline = 'alphabetic';
   spaced(g, `${BRAND.name} ${BRAND.nameSub}`, W / 2, 205, 14);
   g.fillRect(W / 2 - 160, 250, 320, 4);
-  // icône
-  icon(g, kind, W / 2, 760, 250);
+  // visuel : photo fournie (ballon / concert / logo) ou pictogramme
+  const photo = kind === 'football' ? IMG.ball : kind === 'concert' ? IMG.concert : kind === 'master' ? IMG.logo : undefined;
+  if (photo) {
+    const x0 = 120, y0 = 380, w = W - 240, h = 760;
+    g.save(); g.beginPath(); (g as any).roundRect(x0, y0, w, h, 34); g.clip();
+    if (kind === 'master') { g.fillStyle = '#000'; g.fillRect(x0, y0, w, h); }
+    const s = Math.max(w / photo.width, h / photo.height) * (kind === 'master' ? 0.86 : 1);
+    const dw = photo.width * s, dh = photo.height * s;
+    if (kind === 'master') g.drawImage(photo, x0 + (w - dw) / 2, y0 + (h - dh) / 2, dw, dh);
+    else g.drawImage(photo, x0 + (w - dw) / 2, y0 + (h - dh) * 0.55, dw, dh);
+    const sh = g.createLinearGradient(0, y0, 0, y0 + h); sh.addColorStop(0.6, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.55)');
+    g.fillStyle = sh; g.fillRect(x0, y0, w, h); g.restore();
+    g.strokeStyle = goldGrad(g, x0, y0, x0 + w, y0 + h); g.lineWidth = 6; g.beginPath(); (g as any).roundRect(x0, y0, w, h, 34); g.stroke();
+  } else icon(g, kind, W / 2, 760, 250);
   // titre
   const title = kind === 'master' ? 'PASS' : BRAND.categories.find((x) => x.key === (kind === 'show' ? 'show' : kind))!.label;
   g.fillStyle = '#ffffff'; g.font = `900 ${title.length > 8 ? 132 : 170}px WDisplay`;

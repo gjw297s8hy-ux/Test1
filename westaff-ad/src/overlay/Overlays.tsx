@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
-import {BRAND, SAFE} from '../brand';
+import {BRAND, SAFE, legacyTime} from '../brand';
 import {ease, prog, mix, clamp} from '../lib/anim';
 
 const C = BRAND.colors;
@@ -63,14 +63,15 @@ const Flash: React.FC<{t: number; at: number; color: string; width?: number; str
   );
 };
 
-export const TRANSITIONS = [4.0, 9.0, 14.0, 18.0, 24.0];
+export const TRANSITIONS = [4.0, 9.0, 14.0, 19.0, 23.0, 29.0];
 /** Intensité de transition (pour flou de mouvement / zoom du canvas 3D). */
 export const transitionAmount = (t: number) => TRANSITIONS.reduce((a, b) => Math.max(a, Math.exp(-Math.pow((t - b) / 0.075, 2))), 0);
 
 export const Overlays: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const t = frame / fps;
+  const real = frame / fps;
+  const t = legacyTime(real); // textes historiques (−1 pendant la scène insérée)
   const cp = BRAND.copy;
   // CTA
   const cta1 = t >= 25.2 && t < 27.9;
@@ -79,6 +80,7 @@ export const Overlays: React.FC = () => {
   return (
     <AbsoluteFill style={{pointerEvents: 'none'}}>
       <SceneTitle t={t} t0={4.55} t1={8.45} eyebrow={cp.stadium.eyebrow} lines={cp.stadium.lines} top={300} />
+      <SceneTitle t={real} t0={9.2} t1={11.25} eyebrow={cp.leagues.eyebrow} lines={cp.leagues.lines} top={290} />
       <SceneTitle t={t} t0={9.55} t1={13.45} eyebrow={cp.concert.eyebrow} lines={cp.concert.lines} top={1150} />
       <SceneTitle t={t} t0={14.75} t1={17.45} eyebrow={cp.theatre.eyebrow} lines={cp.theatre.lines} top={290} />
       {/* sous-texte du hero */}
@@ -114,11 +116,12 @@ export const Overlays: React.FC = () => {
           </div>
         </div>
       )}
-      <Flash t={t} at={4.0} color="rgba(232,185,100,0.55)" />
-      <Flash t={t} at={9.0} color="rgba(120,160,255,0.55)" />
-      <Flash t={t} at={14.0} color="rgba(155,61,255,0.55)" />
-      <Flash t={t} at={18.0} color="rgba(232,185,100,0.5)" width={0.08} />
-      <Flash t={t} at={24.0} color="rgba(232,185,100,0.6)" width={0.13} />
+      <Flash t={real} at={4.0} color="rgba(232,185,100,0.55)" />
+      <Flash t={real} at={9.0} color="rgba(120,160,255,0.55)" />
+      <Flash t={real} at={14.0} color="rgba(120,160,255,0.55)" />
+      <Flash t={real} at={19.0} color="rgba(155,61,255,0.55)" />
+      <Flash t={real} at={23.0} color="rgba(232,185,100,0.5)" width={0.08} />
+      <Flash t={real} at={29.0} color="rgba(232,185,100,0.6)" width={0.13} />
     </AbsoluteFill>
   );
 };

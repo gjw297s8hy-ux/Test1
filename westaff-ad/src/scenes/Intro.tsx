@@ -7,6 +7,7 @@ import {goldPolished} from '../three/materials';
 import {TICKET} from '../three/ticket';
 import {ease, prog, mix, rng, Path} from '../lib/anim';
 import {BRAND} from '../brand';
+import {IMG} from '../three/assets';
 import type {Fonts, CamState, SceneLook} from './types';
 
 export const introLook: SceneLook = {background: '#020205', env: 0.55, exposure: 1.0, bloom: 1.1};
@@ -85,8 +86,15 @@ export const Intro: React.FC<{t: number; fonts: Fonts}> = ({t, fonts}) => {
   };
   const key = mix(-3, 3, prog(t, 2.2, 3.6));
 
+  const moonTex = useMemo(() => { const tx = new THREE.Texture(IMG.moon); tx.colorSpace = THREE.SRGBColorSpace; tx.needsUpdate = true; return tx; }, []);
+  const bgIn = ease.inOutSine(prog(t, 0.6, 2.6));
   return (
     <group>
+      {/* décor fourni : la Terre vue depuis la Lune, en fond lointain (parallaxe lente) */}
+      <mesh position={[0.3 - t * 0.12, 1.6 - t * 0.05, -34]} scale={1 + t * 0.012}>
+        <planeGeometry args={[40, 28]} />
+        <meshBasicMaterial map={moonTex} color={new THREE.Color(0.62, 0.66, 0.78).multiplyScalar(bgIn)} toneMapped={false} fog={false} />
+      </mesh>
       <ambientLight intensity={0.15} />
       <spotLight position={[2.5, 4, 5]} angle={0.5} penumbra={0.8} intensity={60} color="#ffe2b0" decay={2} />
       <pointLight position={[-3, 1, -2]} intensity={25} color={BRAND.colors.electric} />

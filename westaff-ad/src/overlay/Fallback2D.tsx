@@ -11,6 +11,7 @@ const C = BRAND.colors;
 const BG: Record<string, string> = {
   intro: 'radial-gradient(circle at 50% 38%, #2a1f0a 0%, #050407 55%)',
   stadium: 'radial-gradient(ellipse at 50% 85%, #1b5f2a 0%, #0a1430 45%, #02030a 80%)',
+  leagues: 'radial-gradient(ellipse at 50% 40%, #1a2a6a 0%, #070b1c 55%, #02030a 85%)',
   concert: 'radial-gradient(ellipse at 50% 35%, #5a1fb0 0%, #1a0838 45%, #04020b 80%)',
   theatre: 'radial-gradient(ellipse at 50% 45%, #6a1240 0%, #22061a 50%, #030108 85%)',
   hero: 'radial-gradient(ellipse at 50% 55%, #2a1650 0%, #0a0612 55%, #020205 85%)',

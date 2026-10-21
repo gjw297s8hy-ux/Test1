@@ -2,6 +2,7 @@ import {staticFile, delayRender, continueRender} from 'remotion';
 import {useEffect, useState} from 'react';
 import {TTFLoader} from 'three/examples/jsm/loaders/TTFLoader.js';
 import {Font, FontLoader} from 'three/examples/jsm/loaders/FontLoader.js';
+import {preloadImages} from './assets';
 
 /** Charge une police OTF/TTF en Font three.js (glyphes extrudables) + l'enregistre pour le Canvas 2D. */
 export const useFonts = () => {
@@ -27,6 +28,7 @@ export const useFonts = () => {
       load2D('WBold', 'fonts/Inter-ExtraBold.otf'),
       load2D('WSemi', 'fonts/Inter-SemiBold.otf'),
       load2D('WMedium', 'fonts/Inter-Medium.otf'),
+      preloadImages(),
     ]).then(([display, bold]) => {
       setFonts({display, bold});
       continueRender(handle);
