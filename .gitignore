@@ -1,0 +1,5 @@
+node_modules/
+renders/**/*.mov
+renders/**/frames/
+renders/tmp/
+previews/tmp/

@@ -1,0 +1,20 @@
+{
+  "name": "westaff-place-ad",
+  "private": true,
+  "type": "module",
+  "description": "WESTAFF PLACE 30s vertical cinematic ad - procedural Three.js scenes rendered headless, finished with ffmpeg",
+  "scripts": {
+    "fonts": "node scripts/build-fonts.mjs",
+    "audio": "python3 scripts/audio.py",
+    "render": "node scripts/render.mjs",
+    "still": "node scripts/render.mjs --stills",
+    "master": "node scripts/master.mjs"
+  },
+  "dependencies": {
+    "@fontsource/cinzel": "5.1.0",
+    "@fontsource/montserrat": "5.1.0",
+    "opentype.js": "1.3.4",
+    "playwright-core": "1.56.1",
+    "three": "0.169.0"
+  }
+}

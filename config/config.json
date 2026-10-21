@@ -1,0 +1,164 @@
+{
+  "brand": {
+    "name": "WESTAFF PLACE",
+    "wordmarkTop": "WESTAFF",
+    "wordmarkBottom": "PLACE",
+    "tagline": "VOS ÉVÉNEMENTS À PRIX RÉDUITS",
+    "socialHandle": null,
+    "handlePlaceholder": "@COMPTE_OFFICIEL",
+    "contactPrefix": "CONTACTEZ",
+    "logoFile": null
+  },
+  "palette": {
+    "obsidian": "#050507",
+    "gold": "#D6AE57",
+    "silver": "#D9DDE4",
+    "electricBlue": "#126BFF",
+    "violet": "#772BFF",
+    "crimson": "#790B1A"
+  },
+  "copy": {
+    "s1": "LES PLUS GRANDES|ÉMOTIONS",
+    "s2": "LES PLUS GRANDS|MATCHS",
+    "s3": "LES CONCERTS|INOUBLIABLES",
+    "s4": "DES SPECTACLES|EXCEPTIONNELS",
+    "s5": "TES PLACES|À PRIX RÉDUITS",
+    "s5sub": "FOOTBALL • CONCERTS • SPECTACLES",
+    "tickets": [
+      "FOOTBALL",
+      "CONCERT",
+      "SPECTACLE"
+    ]
+  },
+  "timing": {
+    "duration": 30,
+    "bpm": 120,
+    "scenes": [
+      {
+        "id": "s1",
+        "module": "s1_awakening.js",
+        "start": 0,
+        "end": 4
+      },
+      {
+        "id": "s2",
+        "module": "s2_football.js",
+        "start": 4,
+        "end": 9
+      },
+      {
+        "id": "s3",
+        "module": "s3_concert.js",
+        "start": 9,
+        "end": 14
+      },
+      {
+        "id": "s4",
+        "module": "s4_theatre.js",
+        "start": 14,
+        "end": 18
+      },
+      {
+        "id": "s5",
+        "module": "s5_tickets.js",
+        "start": 18,
+        "end": 24
+      },
+      {
+        "id": "s6",
+        "module": "s6_finale.js",
+        "start": 24,
+        "end": 30
+      }
+    ],
+    "transitions": [
+      {
+        "at": 4,
+        "type": "portal",
+        "duration": 0.7
+      },
+      {
+        "at": 9,
+        "type": "beam",
+        "duration": 0.6
+      },
+      {
+        "at": 14,
+        "type": "spot",
+        "duration": 0.7
+      },
+      {
+        "at": 18,
+        "type": "portal",
+        "duration": 0.8
+      },
+      {
+        "at": 24,
+        "type": "crossfade",
+        "duration": 0.3
+      }
+    ]
+  },
+  "quality": {
+    "preview": {
+      "width": 360,
+      "height": 640,
+      "fps": 30,
+      "msaa": 0,
+      "motionBlurSamples": 1,
+      "dof": false,
+      "pixelRatio": 1
+    },
+    "draft": {
+      "width": 540,
+      "height": 960,
+      "fps": 30,
+      "msaa": 4,
+      "motionBlurSamples": 1,
+      "dof": true,
+      "pixelRatio": 1
+    },
+    "final": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 60,
+      "msaa": 4,
+      "motionBlurSamples": 2,
+      "dof": true,
+      "pixelRatio": 1
+    },
+    "uhd": {
+      "width": 2160,
+      "height": 3840,
+      "fps": 60,
+      "msaa": 4,
+      "motionBlurSamples": 2,
+      "dof": true,
+      "pixelRatio": 1
+    }
+  },
+  "effects": {
+    "bloom": {
+      "enabled": true,
+      "strength": 0.55,
+      "threshold": 1.0,
+      "radius": 0.85
+    },
+    "exposure": 1.0,
+    "chromaticAberration": 0.0006,
+    "lensDistortion": 0.025,
+    "vignette": 0.35,
+    "grain": 0.022,
+    "shutterAngle": 180
+  },
+  "output": {
+    "dir": "renders",
+    "master": "renders/westaff_place_master_1080x1920_60fps.mp4",
+    "audio": "audio/westaff_place_mix_48k.wav",
+    "safeZone": {
+      "top": 0.11,
+      "bottom": 0.2,
+      "sides": 0.06
+    }
+  }
+}
