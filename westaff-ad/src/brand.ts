@@ -5,7 +5,7 @@
 export const BRAND = {
   name: 'WESTAFF',
   nameSub: 'PLACE',
-  handle: '@NOM_DU_COMPTE', // ← remplacer par le compte TikTok / Instagram
+  handle: '@westaffplace', // ← remplacer par le compte TikTok / Instagram
   colors: {
     black: '#030306',
     gold: '#e8b964',
