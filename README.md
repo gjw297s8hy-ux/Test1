@@ -31,6 +31,7 @@ Netlify ou Vercel fonctionnent aussi : glissez-déposez le dossier, rien à conf
 
 ## 3. Personnaliser
 
+- Le logo (formats SVG et PNG, fond sombre et fond clair) est dans `assets/`.
 - Le nom « 365DayAgency » apparaît dans `index.html` et `commande.html` (logo, titre, pied de page).
 - Les réalisations (Soirée BOHO, vidéos salle de sport) utilisent des visuels de démonstration : remplacez les blocs `.thumb` par vos images.
 - Les flyers qui flottent dans la scène 3D se changent dans `js/scene.js` (liste `posters`).
