@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+<script>document.documentElement.classList.add("js")</script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MG Studio · Flyers, teasers et publicités</title>
+  <meta name="description" content="Création de flyers, teasers vidéo et publicités pour vos soirées, événements, marques et projets perso. Commandez en ligne." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <a class="logo" href="index.html">MG<span>.</span>Studio</a>
+      <button class="menu-toggle" aria-expanded="false" aria-controls="nav-links">☰ Menu</button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" aria-current="page">Accueil</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#realisations">Réalisations</a></li>
+        <li><a href="#process">Comment ça marche</a></li>
+        <li><a class="btn" href="commande.html">Commander</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="container">
+      <div class="hero-content">
+        <span class="eyebrow">✦ Communication &amp; marketing</span>
+        <h1>Vos événements méritent d'être <span class="grad-text">vus.</span></h1>
+        <p>Flyers, teasers vidéo et publicités qui donnent envie de venir. Pour les soirées, les marques, les salles de sport et tous vos projets, pros ou perso.</p>
+        <div class="hero-actions">
+          <a class="btn" href="commande.html">Passer commande →</a>
+          <a class="btn btn-ghost" href="#services">Voir les services</a>
+        </div>
+      </div>
+    </div>
+    <span class="scroll-hint">↓ Défiler</span>
+  </header>
+
+  <main>
+    <section id="services">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Ce que je crée <span class="grad-text">pour vous</span></h2>
+          <p>Choisissez votre format, je m'occupe du reste : idée, design, montage et livraison prête à publier.</p>
+        </div>
+        <div class="grid">
+          <article class="card reveal" data-tilt>
+            <div class="icon">🎨</div>
+            <h3>Flyers &amp; affiches</h3>
+            <p>Des visuels qui accrochent l'œil, en version imprimée ou réseaux sociaux.</p>
+            <ul>
+              <li>Soirées, concerts, événements</li>
+              <li>Formats story, post, A5, A4…</li>
+              <li>Fichiers prêts pour l'impression</li>
+            </ul>
+            <p class="price"><a href="commande.html?service=flyer">Commander un flyer →</a></p>
+          </article>
+          <article class="card reveal" data-tilt>
+            <div class="icon">🎬</div>
+            <h3>Teasers vidéo</h3>
+            <p>Des vidéos courtes et rythmées pour faire monter l'attente avant le jour J.</p>
+            <ul>
+              <li>Reels, TikTok, Stories</li>
+              <li>Motion design et montage</li>
+              <li>Musique et sous-titres</li>
+            </ul>
+            <p class="price"><a href="commande.html?service=teaser">Commander un teaser →</a></p>
+          </article>
+          <article class="card reveal" data-tilt>
+            <div class="icon">📣</div>
+            <h3>Publicités</h3>
+            <p>Des campagnes pensées pour vendre : visuels, vidéos et textes publicitaires.</p>
+            <ul>
+              <li>Pubs Instagram, Facebook, TikTok</li>
+              <li>Vidéos promo pour marques et salles</li>
+              <li>Déclinaisons multi-formats</li>
+            </ul>
+            <p class="price"><a href="commande.html?service=publicite">Commander une pub →</a></p>
+          </article>
+          <article class="card reveal" data-tilt>
+            <div class="icon">✨</div>
+            <h3>Pack communication</h3>
+            <p>Flyer + teaser + pub : une com' cohérente du début à la fin de votre événement.</p>
+            <ul>
+              <li>Identité visuelle de l'événement</li>
+              <li>Calendrier de publication</li>
+              <li>Suivi jusqu'au jour J</li>
+            </ul>
+            <p class="price"><a href="commande.html?service=pack">Demander un pack →</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="realisations">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Quelques <span class="grad-text">réalisations</span></h2>
+          <p>Des soirées aux salles de sport, chaque projet a son ambiance.</p>
+        </div>
+        <div class="grid">
+          <article class="work reveal" data-tilt>
+            <div class="thumb t1"><strong>Soirée<br />BOHO</strong></div>
+            <div class="meta"><h3>Soirée BOHO</h3><span>Flyer + teaser · Événementiel</span></div>
+          </article>
+          <article class="work reveal" data-tilt>
+            <div class="thumb t2"><strong>Vidéo<br />fitness</strong></div>
+            <div class="meta"><h3>Vidéos salle de sport</h3><span>Vidéos promo · Réseaux sociaux</span></div>
+          </article>
+          <article class="work reveal" data-tilt>
+            <div class="thumb t3"><strong>Votre<br />projet ?</strong></div>
+            <div class="meta"><h3>Le prochain, c'est le vôtre</h3><span><a href="commande.html">Lancer ma demande →</a></span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="process">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2>Comment <span class="grad-text">ça marche</span></h2>
+          <p>Simple, rapide, sans prise de tête.</p>
+        </div>
+        <div class="grid steps">
+          <div class="card step reveal"><h3>Vous décrivez votre besoin</h3><p>Remplissez le formulaire de commande en 2 minutes.</p></div>
+          <div class="card step reveal"><h3>Je vous recontacte</h3><p>Sous 24 à 48 h, par téléphone ou message, avec un devis.</p></div>
+          <div class="card step reveal"><h3>Création</h3><p>Je réalise une première version et on l'ajuste ensemble.</p></div>
+          <div class="card step reveal"><h3>Livraison</h3><p>Vous recevez vos fichiers prêts à imprimer ou à publier.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2>Un événement à faire connaître ?</h2>
+          <p>Dites-moi ce dont vous avez besoin, je vous recontacte rapidement avec une proposition.</p>
+          <a class="btn" href="commande.html">Passer commande →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© <span id="year"></span> MG Studio · Communication &amp; marketing</span>
+      <div class="socials">
+        <a data-email href="#">e-mail</a>
+        <a data-social="instagram" href="#" target="_blank" rel="noopener">Instagram</a>
+        <a data-social="tiktok" href="#" target="_blank" rel="noopener">TikTok</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initScene } from "./js/scene.js";
+    initScene(document.getElementById("hero-canvas"), { variant: "hero" });
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
