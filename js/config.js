@@ -10,7 +10,7 @@ export const CONFIG = {
 
   // 2. Votre adresse e-mail (utilisée en secours si Formspree
   //    n'est pas encore configuré, et affichée en bas de page).
-  CONTACT_EMAIL: "contact@exemple.fr",
+  CONTACT_EMAIL: "365Dayforliberty@gmail.com",
 
   // 3. Liens vers vos réseaux (laissez "" pour masquer).
   INSTAGRAM: "https://instagram.com/",
