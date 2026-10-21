@@ -8,7 +8,7 @@ import {PostWorld} from './PostWorld';
 import {REL, SH} from './config';
 import {ease, prog} from '../lib/anim';
 
-const PLATFORMS_Y_PR = 1430;
+const PLATFORMS_Y_PR = 1590;
 /** Teaser vertical « nouveau son » en 3D isométrique (caméra orthographique). */
 export const Release: React.FC<{withAudio: boolean; photoreal?: boolean}> = ({withAudio, photoreal = false}) => {
   const {width, height, fps} = useVideoConfig();
