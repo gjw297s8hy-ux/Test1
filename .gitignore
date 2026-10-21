@@ -3,3 +3,6 @@ renders/**/*.mov
 renders/**/frames/
 renders/tmp/
 previews/tmp/
+previews/*/*.png
+renders/*.log
+renders/tmp/
