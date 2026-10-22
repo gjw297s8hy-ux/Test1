@@ -13,6 +13,6 @@ export const CONFIG = {
   CONTACT_EMAIL: "365Dayforliberty@gmail.com",
 
   // 3. Liens vers vos réseaux (laissez "" pour masquer).
-  INSTAGRAM: "https://instagram.com/",
+  INSTAGRAM: "https://www.instagram.com/365dayagency/",
   TIKTOK: "",
 };

@@ -25,7 +25,7 @@ Tant que Formspree n'est pas configuré, le formulaire ouvre l'application e-mai
 
 1. Sur GitHub, allez dans **Settings → Pages** du dépôt.
 2. Dans « Build and deployment », choisissez **Deploy from a branch**, branche `main`, dossier `/ (root)`, puis **Save**.
-3. Après une minute, le site est en ligne à l'adresse affichée (ex. `https://<votre-compte>.github.io/Test1/`).
+3. Après une minute, le site est en ligne à l'adresse affichée. Le site utilise le domaine **365dayagency.fr** (fichier `CNAME`, DNS chez OVH).
 
 Netlify ou Vercel fonctionnent aussi : glissez-déposez le dossier, rien à configurer.
 
