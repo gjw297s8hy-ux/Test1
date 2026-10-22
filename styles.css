@@ -179,6 +179,7 @@ input[type="date"] { color-scheme: dark; }
 .consent { display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; color: var(--muted); margin-bottom: 22px; }
 .consent input { margin-top: 4px; accent-color: var(--pink); width: 18px; height: 18px; flex: none; }
 .hp { position: absolute; left: -9999px; }
+.pay-note { border: 1px solid rgba(34,228,255,.35); background: rgba(34,228,255,.07); border-radius: 12px; padding: 12px 14px; font-size: .9rem; color: var(--text); margin: 0 0 16px; }
 .error-msg { color: #ff7a9c; font-size: .9rem; min-height: 1.2em; margin: 0 0 12px; }
 
 .side-card { position: sticky; top: 96px; }
