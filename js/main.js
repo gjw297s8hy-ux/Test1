@@ -60,3 +60,28 @@ if (wanted) {
   const box = document.querySelector(`input[name="prestations"][value="${CSS.escape(wanted)}"]`);
   if (box) box.checked = true;
 }
+
+// Formule choisie depuis la page Tarifs (ex. commande.html?formule=pro)
+const formule = new URLSearchParams(location.search).get("formule");
+const formuleSelect = document.getElementById("formule");
+if (formule && formuleSelect && [...formuleSelect.options].some((o) => o.value === formule)) {
+  formuleSelect.value = formule;
+  ["flyer", "teaser"].forEach((v) => {
+    const box = document.querySelector(`input[name="prestations"][value="${v}"]`);
+    if (box) box.checked = true;
+  });
+}
+
+// Vidéos d'exemple : lecture seulement quand elles sont visibles
+const videos = document.querySelectorAll(".tier-media video");
+if (videos.length) {
+  const vio = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.play().catch(() => {});
+        else e.target.pause();
+      }),
+    { threshold: 0.35 }
+  );
+  videos.forEach((v) => vio.observe(v));
+}
