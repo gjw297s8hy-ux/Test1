@@ -125,7 +125,7 @@ export function initScene(canvas, { variant = "hero" } = {}) {
     ["FLYER", "Soirée · Événement", PALETTE.pink, PALETTE.violet],
     ["TEASER", "Vidéo · Réseaux", PALETTE.cyan, PALETTE.violet],
     ["PUB", "Campagne · Marque", PALETTE.gold, PALETTE.pink],
-    ["BOHO", "Night party", PALETTE.violet, PALETTE.cyan],
+    ["PARTY", "Night club", PALETTE.violet, PALETTE.cyan],
     ["SPORT", "Vidéo promo", PALETTE.cyan, PALETTE.gold],
   ];
   const cardGeo = new THREE.PlaneGeometry(1.1, 1.55);
