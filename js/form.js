@@ -64,6 +64,7 @@ const LABELS = {
   contact_prefere: "Contact préféré",
   date_evenement: "Date de l'événement",
   delai: "Délai souhaité",
+  formule: "Formule",
   budget: "Budget",
   supports: "Supports",
   description: "Description du besoin",
