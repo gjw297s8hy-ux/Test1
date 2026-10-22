@@ -176,10 +176,10 @@ def build_stage(M):
     objs = [D.plane('stage_floor', (90, 90), (S[0], 30, 0), (0, 0, 0), floor)]
     # cyclo : quart de cylindre derrière
     bpy.ops.mesh.primitive_cylinder_add(radius=14, depth=90, vertices=64, end_fill_type='NOTHING', location=(S[0], 34, 14), rotation=(0, math.radians(90), 0))
-    cy = bpy.context.active_object; cy.name = 'stage_cyc'; cy.data.materials.append(D.mat_simple('Cyc', (0.006, 0.006, 0.007), rough=0.6)); objs.append(cy)
+    cy = bpy.context.active_object; cy.name = 'stage_cyc'; cy.data.materials.append(D.mat_simple('Cyc', (0.03, 0.012, 0.014), rough=0.6)); objs.append(cy)
     lights = []
     for i, (x, y, z, e, c) in enumerate(((-6, 4, 5, 1600, (1, 0.05, 0.06)), (6, 4, 5, 1600, (1, 0.05, 0.06)), (0, -7, 9, 900, (0.95, 0.96, 1.0)), (0, 10, 3, 1200, (1, 0.08, 0.1)))):
-        l = bpy.data.lights.new(f'stageL{i}', 'AREA'); l.energy = e; l.size = 4; l.color = c
+        l = bpy.data.lights.new(f'stageL{i}', 'AREA'); l.energy = e * 1.8; l.size = 4; l.color = c
         o = bpy.data.objects.new(f'stageL{i}', l); bpy.context.scene.collection.objects.link(o); o.location = (S[0] + x, y, z)
         tc = o.constraints.new('TRACK_TO'); tc.target = E(f'stageT{i}', (S[0], 2, 1.2)); tc.track_axis = 'TRACK_NEGATIVE_Z'; tc.up_axis = 'UP_Y'
         o.visible_camera = False; lights.append(o)
@@ -258,10 +258,15 @@ def build():
     for o in stage: show(o, (B[0], Dd[1]))
     anim = []
     seq = lambda n: os.path.join(ROOT, f'out/npng_seq/{n}/f0001.jpg')
-    rose_dim = image_mat('RoseDim', seq('rose'), 0.6, sequence=True)
-    clip_m = image_mat('ClipScreen', seq('clip'), 1.3, sequence=True)
-    cover_m = image_mat('Cover', os.path.join(ROOT, 'public/npng/cover.jpg'), 1.9)
-    ph = {k: image_mat(f'Photo_{k}', os.path.join(ROOT, f'public/npng/photo_{k}.jpg'), 1.6) for k in ('studio', 'duo', 'profile')}
+    rose_dim = image_mat('RoseDim', seq('rose'), 0.95, sequence=True)
+    clip_m = image_mat('ClipScreen', seq('clip'), 1.6, sequence=True)
+    cover_m = image_mat('Cover', os.path.join(ROOT, 'public/npng/cover.jpg'), 2.4)
+    ph = {k: image_mat(f'Photo_{k}', os.path.join(ROOT, f'public/npng/photo_{k}.jpg'), 2.2) for k in ('studio', 'duo', 'profile')}
+    # les images sources sont des photos de nuit : on relève les ombres (gamma) pour qu'elles restent lisibles
+    for m_, g_ in ((rose_dim, 0.7), (clip_m, 0.75), (cover_m, 0.6), *[(m, 0.6) for m in ph.values()]):
+        nt = m_.node_tree; tex = next(n for n in nt.nodes if n.type == 'TEX_IMAGE'); em = next(n for n in nt.nodes if n.type == 'EMISSION')
+        gm = nt.nodes.new('ShaderNodeGamma'); gm.inputs['Gamma'].default_value = g_
+        nt.links.new(tex.outputs['Color'], gm.inputs['Color']); nt.links.new(gm.outputs[0], em.inputs['Color'])
     front = lambda name, loc, yaw=0.0: E(name, loc, (math.radians(90), 0, yaw))  # face caméra plateau (-Y)
 
     # B — NO PAIN / NO GAIN

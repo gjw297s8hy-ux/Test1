@@ -31,7 +31,7 @@ export const PostWorld: React.FC = () => {
   const punch = near(t, IMPACTS, 0.09), whip = near(t, SHOT_T, 0.09), tr = near(t, CUTS, 0.07);
   fx.blur.set(Math.max(tr * 0.18, whip * 0.14), 1 + tr * 0.9);
   fx.grade.set(glitchAmount(t), Math.floor(t * 30));
-  fx.grade.mode(true, 0.85);
+  fx.grade.mode(true, 0.7);
   fx.lens.set(0.14 + punch * 0.2 + whip * 0.1, 0.016 + punch * 0.03 + tr * 0.04);
   const {scene} = useThree(); scene.background = new THREE.Color('#000');
   return (
@@ -41,7 +41,7 @@ export const PostWorld: React.FC = () => {
         <SMAA />
         <Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.72} luminanceSmoothing={0.2} radius={0.7} />
         <primitive object={fx.blur} dispose={null} />
-        <Vignette offset={0.32} darkness={0.42} />
+        <Vignette offset={0.32} darkness={0.28} />
         <Noise premultiply blendFunction={BlendFunction.SOFT_LIGHT} opacity={0.32} />
         <primitive object={fx.lens} dispose={null} />
         <primitive object={fx.grade} dispose={null} />
