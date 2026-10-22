@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fr">
+<script>document.documentElement.classList.add("js")</script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Commander · 365DayAgency</title>
+  <meta name="description" content="Décrivez votre projet de flyer, teaser ou publicité : je vous recontacte sous 24 à 48 h." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="assets/logo-icon.png" type="image/png" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="bg-canvas" class="bg-canvas" aria-hidden="true"></canvas>
+
+  <nav class="nav">
+    <div class="container">
+      <a class="logo" href="index.html"><img src="assets/logo-icon.png" alt="" width="36" height="36" /><span>365Day<em>Agency</em></span></a>
+      <button class="menu-toggle" aria-expanded="false" aria-controls="nav-links">☰ Menu</button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="index.html#services">Services</a></li>
+        <li><a href="index.html#realisations">Réalisations</a></li>
+        <li><a href="index.html#process">Comment ça marche</a></li>
+        <li><a class="btn" href="commande.html" aria-current="page">Commander</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="order-page">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">✦ Commande &amp; devis gratuit</span>
+        <h1 style="font-size: clamp(2rem, 5vw, 3.2rem)">Parlez-moi de <span class="grad-text">votre projet</span></h1>
+        <p>Remplissez ce formulaire en 2 minutes. Je vous recontacte sous 24 à 48 h pour en discuter et vous envoyer un devis.</p>
+      </div>
+
+      <div class="order-layout">
+        <div class="form-card" id="form-card">
+          <p class="notice" id="setup-notice" hidden>
+            ⚙️ Mode aperçu : l'envoi automatique n'est pas encore activé. En validant, votre application e-mail s'ouvrira avec la demande pré-remplie.
+          </p>
+
+          <form id="order-form" novalidate>
+            <fieldset>
+              <legend><span class="num">1</span> Votre besoin</legend>
+
+              <p class="label">Que voulez-vous créer ? <span class="req">*</span> <span class="hint">(plusieurs choix possibles)</span></p>
+              <div class="choices" style="margin: 10px 0 20px">
+                <div class="choice">
+                  <input type="checkbox" id="p-flyer" name="prestations" value="flyer" />
+                  <label for="p-flyer"><span class="emoji">🎨</span> Flyer / affiche <small>Print ou réseaux</small></label>
+                </div>
+                <div class="choice">
+                  <input type="checkbox" id="p-teaser" name="prestations" value="teaser" />
+                  <label for="p-teaser"><span class="emoji">🎬</span> Teaser vidéo <small>Reel, TikTok, story</small></label>
+                </div>
+                <div class="choice">
+                  <input type="checkbox" id="p-pub" name="prestations" value="publicite" />
+                  <label for="p-pub"><span class="emoji">📣</span> Publicité <small>Campagne, vidéo promo</small></label>
+                </div>
+                <div class="choice">
+                  <input type="checkbox" id="p-pack" name="prestations" value="pack" />
+                  <label for="p-pack"><span class="emoji">✨</span> Pack complet <small>Flyer + teaser + pub</small></label>
+                </div>
+                <div class="choice">
+                  <input type="checkbox" id="p-autre" name="prestations" value="autre" />
+                  <label for="p-autre"><span class="emoji">💡</span> Autre <small>Logo, identité, conseil…</small></label>
+                </div>
+              </div>
+
+              <p class="label">Où sera-t-il diffusé ?</p>
+              <div class="choices pills" style="margin: 10px 0 20px">
+                <div class="choice"><input type="checkbox" id="s-insta" name="supports" value="Instagram" /><label for="s-insta">Instagram</label></div>
+                <div class="choice"><input type="checkbox" id="s-tiktok" name="supports" value="TikTok" /><label for="s-tiktok">TikTok</label></div>
+                <div class="choice"><input type="checkbox" id="s-fb" name="supports" value="Facebook" /><label for="s-fb">Facebook</label></div>
+                <div class="choice"><input type="checkbox" id="s-snap" name="supports" value="Snapchat" /><label for="s-snap">Snapchat</label></div>
+                <div class="choice"><input type="checkbox" id="s-print" name="supports" value="Impression" /><label for="s-print">Impression</label></div>
+                <div class="choice"><input type="checkbox" id="s-web" name="supports" value="Site web" /><label for="s-web">Site web</label></div>
+              </div>
+
+              <div class="field">
+                <label for="description">Décrivez votre projet <span class="req">*</span></label>
+                <textarea id="description" name="description" required placeholder="Ex. : Soirée BOHO le 14 décembre au club X. Je veux un flyer pour Instagram et un teaser de 15 s, ambiance chic et tropicale, avec le line-up des DJ…"></textarea>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label for="date_evenement">Date de l'événement <span class="hint">(si applicable)</span></label>
+                  <input type="date" id="date_evenement" name="date_evenement" />
+                </div>
+                <div class="field">
+                  <label for="delai">Pour quand en avez-vous besoin ?</label>
+                  <select id="delai" name="delai">
+                    <option value="">Choisir…</option>
+                    <option>Urgent (moins d'une semaine)</option>
+                    <option>D'ici 1 à 2 semaines</option>
+                    <option>D'ici un mois</option>
+                    <option>Pas pressé</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label for="budget">Budget envisagé</label>
+                  <select id="budget" name="budget">
+                    <option value="">Choisir…</option>
+                    <option>Moins de 100 €</option>
+                    <option>100 à 300 €</option>
+                    <option>300 à 600 €</option>
+                    <option>600 à 1 000 €</option>
+                    <option>Plus de 1 000 €</option>
+                    <option>Je ne sais pas encore</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="liens">Liens utiles <span class="hint">(logo, photos, inspirations)</span></label>
+                  <input type="url" id="liens" name="liens" placeholder="https://drive.google.com/…" />
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend><span class="num">2</span> Vos coordonnées</legend>
+
+              <p class="label">Vous êtes…</p>
+              <div class="choices pills" style="margin: 10px 0 20px">
+                <div class="choice"><input type="radio" id="pr-pro" name="profil" value="Professionnel" checked /><label for="pr-pro">Un professionnel</label></div>
+                <div class="choice"><input type="radio" id="pr-part" name="profil" value="Particulier" /><label for="pr-part">Un particulier</label></div>
+                <div class="choice"><input type="radio" id="pr-asso" name="profil" value="Association" /><label for="pr-asso">Une association</label></div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label for="prenom">Prénom <span class="req">*</span></label>
+                  <input type="text" id="prenom" name="prenom" required autocomplete="given-name" />
+                </div>
+                <div class="field">
+                  <label for="nom">Nom <span class="req">*</span></label>
+                  <input type="text" id="nom" name="nom" required autocomplete="family-name" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="entreprise">Entreprise, club ou nom de l'événement</label>
+                <input type="text" id="entreprise" name="entreprise" autocomplete="organization" />
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label for="email">E-mail <span class="req">*</span></label>
+                  <input type="email" id="email" name="email" required autocomplete="email" />
+                </div>
+                <div class="field">
+                  <label for="telephone">Téléphone <span class="req">*</span></label>
+                  <input type="tel" id="telephone" name="telephone" required autocomplete="tel" pattern="[0-9+ ().\-]{8,}" placeholder="06 12 34 56 78" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="contact_prefere">Comment préférez-vous être contacté ?</label>
+                <select id="contact_prefere" name="contact_prefere">
+                  <option>Appel téléphonique</option>
+                  <option>SMS / WhatsApp</option>
+                  <option>E-mail</option>
+                  <option>Message Instagram</option>
+                </select>
+              </div>
+            </fieldset>
+
+            <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+            <label class="consent">
+              <input type="checkbox" name="consentement" value="oui" required />
+              <span>J'accepte d'être recontacté au sujet de ma demande. Mes informations ne servent qu'à cela et ne sont jamais revendues. <span class="req">*</span></span>
+            </label>
+
+            <p class="error-msg" id="form-error" role="alert"></p>
+            <button class="btn" type="submit" style="width: 100%">Envoyer ma demande</button>
+          </form>
+        </div>
+
+        <aside class="form-card side-card">
+          <h3>Et ensuite ?</h3>
+          <ol>
+            <li>Je lis votre demande.</li>
+            <li>Je vous recontacte sous 24 à 48 h.</li>
+            <li>Je vous envoie un devis clair et gratuit.</li>
+            <li>On lance la création !</li>
+          </ol>
+          <h3>Une question ?</h3>
+          <p class="contact-line">✉️ <a data-email href="#">e-mail</a></p>
+          <p class="contact-line">📸 <a data-social="instagram" href="#" target="_blank" rel="noopener">Instagram</a></p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© <span id="year"></span> 365DayAgency · Communication &amp; marketing</span>
+      <div class="socials">
+        <a data-email href="#">e-mail</a>
+        <a data-social="instagram" href="#" target="_blank" rel="noopener">Instagram</a>
+        <a data-social="tiktok" href="#" target="_blank" rel="noopener">TikTok</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initScene } from "./js/scene.js";
+    initScene(document.getElementById("bg-canvas"), { variant: "background" });
+  </script>
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/form.js"></script>
+</body>
+</html>
