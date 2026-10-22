@@ -1,7 +1,7 @@
-# SPEC — « Une phrase, un film »
+# SPEC — « Vos vidéos pour vos business »
 
-GOAL:    the viewer sees one sentence turn into type, 3D, data and a posted film in 30 s, and remembers
-         « une phrase → un film, tout en code ».
+GOAL:    a business owner sees what a video can do for them (type, 3D, a sales chart that climbs, a posted
+         film) and remembers « vos vidéos, flyers, teasers à prix coûtant ».
 OUTPUT:  HyperFrames, 1920 x 1080, 60 fps
 TIME:    30 s x 60 = 1 800 frames. 120 BPM -> 30 frames per beat, 120 per bar (2 s). 15 bars.
 LOOK:    screen-print poster. Three flat inks, no gradients on grounds (v2: orange + cobalt clashed):
@@ -18,18 +18,19 @@ MOTION:  enter expo.out / power4.out; camera power2.inOut; exit and zoom-through
          Hits are tl.set at 0 ms. Springs: back.out(1.4) on position/scale only.
          Word stagger 60-120 ms. Exits 40-50 % shorter than entrances.
 SHOTS:
-  0.0-4.0  PHRASE   one word per beat on a new ground (lime, ink, cream, ink); DÉPOTE prints its two plates;
-                    camera dives into the lime O; its ink counter fills the frame.     [impacts per word]
-  4.0-10.0 MATIÈRE  ink ground, dark floor fading into fog; cubes fly in and assemble DÉPOTE (seeded delays), orbit 35° -> 0°;
+  0.0-4.0  PHRASE   VOS / VIDÉOS / POUR VOS / BUSINESS, one per beat on a new ground (lime, ink, cream, ink);
+                    BUSINESS prints its two plates; camera dives into the upper counter of the B -> ink.     [impacts per word]
+  4.0-10.0 MATIÈRE  ink ground, dark floor fading into fog; cubes fly in and assemble BUSINESS (seeded delays), orbit 35° -> 0°;
                     « N CUBES. ZÉRO CAMÉRA. »; a wave flips cubes lime -> cream; camera dives into a cream cube.
-  10.0-16.0 CHIFFRES cream ground; count-up 0 -> 1 800 « IMAGES, UNE PAR UNE »; bar chart of frames per scene,
-                    this scene's bar lime with an ink edge; whip left.                                            [pops, whoosh]
-  16.0-24.0 ÉCRAN   ink ground; phone lands from the whip; sentence typed in the composer, video attached;
+  10.0-16.0 VENTES   photoreal studio: cream cove, softbox environment, ACES; six lacquered lime bars rise out
+                    of the floor, a glossy ink arrow climbs over them and takes off; « VOS VENTES GRIMPENT. »;
+                    whip left. No figures on the chart (illustrative, no invented numbers).                                            [pops, whoosh]
+  16.0-24.0 ÉCRAN   ink ground; phone lands from the whip; « nouvelle vidéo pour notre business » typed in the composer, video attached;
                     cursor clicks Publier -> button morphs into « Publié »; post plays; tap -> lime iris.
   24.0-30.0 FIN     lime ground; « VOS VIDÉOS, » « FLYERS, » « TEASERS » one line per beat; riser ->
                     « À PRIX COÛTANT. » prints, cream plate off register, holds 3.5 s.
 BANNED:  dark void with small floating things; glow, bloom, particles as decoration; purple/blue gradients, glass;
          cream + serif + mono-label look; everything centred; fade + slide-up on everything; titles that drift after
          landing; HUD/corner brackets; three cards in a row; docked logo; click rings; invented engagement numbers.
-QA:      t=0 (thumbnail: FAIS-MOI fills frame), 3.9 (ink flood), 7.5 (voxel word readable), 11.6 (1 800),
-         14.8 (chart), 19.6 (click), 25.3 (offer list), 29.5 (À PRIX COÛTANT).
+QA:      t=0 (thumbnail: FAIS-MOI fills frame), 3.9 (ink flood), 7.5 (voxel word readable), 12.6 (bars + arrow),
+         14.6 (chart wide), 19.6 (click), 25.3 (offer list), 29.5 (À PRIX COÛTANT).

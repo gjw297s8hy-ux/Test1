@@ -57,10 +57,10 @@
     .ph-l {
       display: inline-block;
     }
-    #ph-hole {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--color-ink);
+    #ph-base {
+      display: inline-block;
+      width: 0;
+      height: 0;
     }
     #ph-flood {
       position: absolute;
@@ -72,24 +72,19 @@
     <div id="ph-ground"></div>
 
     <div id="ph-w1" class="ph-word clip" data-start="0" data-duration="0.5" data-track-index="1">
-      <div class="ph-line" id="ph-w1-t">FAIS-MOI</div>
+      <div class="ph-line" id="ph-w1-t">VOS</div>
     </div>
     <div id="ph-w2" class="ph-word clip" data-start="0.5" data-duration="0.5" data-track-index="1">
-      <div class="ph-line" id="ph-w2-t">UNE VIDÉO</div>
+      <div class="ph-line" id="ph-w2-t">VIDÉOS</div>
     </div>
     <div id="ph-w3" class="ph-word clip" data-start="1" data-duration="0.5" data-track-index="1">
-      <div class="ph-line" id="ph-w3-t">QUI</div>
+      <div class="ph-line" id="ph-w3-t">POUR VOS</div>
     </div>
 
     <div id="ph-dep" class="clip" data-start="1.5" data-duration="2.5" data-track-index="1" data-layout-allow-overflow data-layout-allow-overlap>
       <div id="ph-dep-inner">
-        <div id="ph-hole"></div>
-        <div class="ph-line" id="ph-plate-b">
-          <span class="ph-l">D</span><span class="ph-l">É</span><span class="ph-l">P</span><span class="ph-l">O</span><span class="ph-l">T</span><span class="ph-l">E</span>
-        </div>
-        <div class="ph-line" id="ph-plate-a">
-          <span class="ph-l">D</span><span class="ph-l">É</span><span class="ph-l">P</span><span class="ph-l" id="ph-o">O</span><span class="ph-l">T</span><span class="ph-l">E</span>
-        </div>
+        <div class="ph-line" id="ph-plate-b"><span class="ph-l">B</span><span class="ph-l">U</span><span class="ph-l">S</span><span class="ph-l">I</span><span class="ph-l">N</span><span class="ph-l">E</span><span class="ph-l">S</span><span class="ph-l">S</span></div>
+        <div class="ph-line" id="ph-plate-a"><span class="ph-l" id="ph-b">B</span><span class="ph-l">U</span><span class="ph-l">S</span><span class="ph-l">I</span><span class="ph-l">N</span><span class="ph-l">E</span><span class="ph-l">S</span><span class="ph-l">S</span><span id="ph-base"></span></div>
       </div>
     </div>
 
@@ -115,24 +110,48 @@
       }
 
       function build() {
-        fit(document.getElementById("ph-w1-t"), 1700, 520);
-        fit(document.getElementById("ph-w2-t"), 1700, 520);
-        fit(document.getElementById("ph-w3-t"), 1500, 760);
+        fit(document.getElementById("ph-w1-t"), 1500, 700);
+        fit(document.getElementById("ph-w2-t"), 1700, 560);
+        fit(document.getElementById("ph-w3-t"), 1700, 560);
         const fsA = fit(document.getElementById("ph-plate-a"), 1700, 560);
         fit(document.getElementById("ph-plate-b"), 1700, 560);
 
-        // the O of DÉPOTE: its counter is the door to the next world
+        // the upper bowl of the B is the door to the next world: find its counter on a canvas
+        const c = document.createElement("canvas");
+        c.width = Math.ceil(fsA * 1.2);
+        c.height = Math.ceil(fsA * 1.5);
+        const g = c.getContext("2d");
+        g.font = fsA + "px 'Archivo Black'";
+        g.fillStyle = "#000";
+        g.fillText("B", 0, fsA * 1.2);
+        const px = g.getImageData(0, 0, c.width, c.height).data;
+        const ink = (x, y) => px[(y * c.width + x) * 4 + 3] > 128;
+        let top = -1,
+          bot = -1;
+        for (let y = 0; y < c.height; y++) {
+          let any = false;
+          for (let x = 0; x < c.width; x++) if (ink(x, y)) { any = true; break; }
+          if (any) { if (top < 0) top = y; bot = y; }
+        }
+        const row = Math.round(top + 0.27 * (bot - top));
+        let x = 0;
+        while (x < c.width && !ink(x, row)) x++;
+        while (x < c.width && ink(x, row)) x++;
+        const c0 = x;
+        while (x < c.width && !ink(x, row)) x++;
+        const cx = (c0 + x) / 2;
+        // centre the counter vertically too
+        const ix = Math.round(cx);
+        let yt = row,
+          yb = row;
+        while (yt > 0 && !ink(ix, yt - 1)) yt--;
+        while (yb < c.height - 1 && !ink(ix, yb + 1)) yb++;
+        const fromBase = fsA * 1.2 - (yt + yb) / 2;
         const inner = document.getElementById("ph-dep-inner").getBoundingClientRect();
-        const o = document.getElementById("ph-o").getBoundingClientRect();
-        const ocx = o.left - inner.left + o.width / 2;
-        const ocy = o.top - inner.top + o.height * 0.5 - fsA * 0.02;
-        const hole = document.getElementById("ph-hole");
-        const hw = o.width * 0.5,
-          hh = fsA * 0.56;
-        hole.style.width = hw + "px";
-        hole.style.height = hh + "px";
-        hole.style.left = ocx - hw / 2 + "px";
-        hole.style.top = ocy - hh / 2 + "px";
+        const b = document.getElementById("ph-b").getBoundingClientRect();
+        const base = document.getElementById("ph-base").getBoundingClientRect();
+        const ocx = b.left - inner.left + cx;
+        const ocy = base.top - inner.top - fromBase;
 
         // ground: one ink per beat
         tl.set("#ph-ground", { backgroundColor: LIME }, 0);
@@ -147,7 +166,7 @@
         // QUI: punch-in
         tl.fromTo("#ph-w3-t", { scale: 1.35, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.3, ease: "expo.out" }, 1.0);
 
-        // DÉPOTE: plate A prints letter by letter, then plate B lands off register
+        // BUSINESS: plate A prints letter by letter, then plate B lands off register
         const la = document.querySelectorAll("#ph-plate-a .ph-l");
         const lb = document.querySelectorAll("#ph-plate-b .ph-l");
         la.forEach(function (l, i) {
@@ -155,7 +174,6 @@
         });
         tl.fromTo(lb, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 2.0);
         tl.fromTo("#ph-plate-b", { x: 0, y: 0 }, { x: 12, y: 10, duration: 0.001 }, 2.0);
-        tl.fromTo("#ph-hole", { opacity: 0 }, { opacity: 1, duration: 0.001 }, 2.0);
 
         // dive into the O
         gsap.set("#ph-dep-inner", { transformOrigin: ocx + "px " + ocy + "px" });
@@ -165,7 +183,9 @@
           { x: 960 - ocx, y: 540 - ocy, duration: 0.55, ease: "power2.inOut" },
           3.2,
         );
-        tl.fromTo("#ph-dep-inner", { scale: 1 }, { scale: 60, duration: 0.75, ease: "power3.in" }, 3.25);
+        tl.fromTo("#ph-dep-inner", { scale: 1 }, { scale: 70, duration: 0.75, ease: "power3.in" }, 3.25);
+        // lift the off-register plate so the counter is clean ink
+        tl.to("#ph-plate-b", { opacity: 0, duration: 0.12, ease: "none" }, 3.15);
         tl.fromTo(
           "#ph-dep-inner",
           { filter: "blur(0px)" },

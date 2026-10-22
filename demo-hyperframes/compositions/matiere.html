@@ -83,15 +83,15 @@
         const g = c.getContext("2d");
         const fs = 120;
         g.font = fs + "px 'Archivo Black'";
-        const w = Math.ceil(g.measureText("DÉPOTE").width);
+        const w = Math.ceil(g.measureText("BUSINESS").width);
         c.width = w + 20;
         c.height = Math.ceil(fs * 1.3);
         g.font = fs + "px 'Archivo Black'";
         g.fillStyle = "#000";
         g.textBaseline = "alphabetic";
-        g.fillText("DÉPOTE", 10, fs * 1.08);
+        g.fillText("BUSINESS", 10, fs * 1.08);
         const data = g.getImageData(0, 0, c.width, c.height).data;
-        const COLS = 96;
+        const COLS = 118;
         const step = w / COLS;
         const cells = [];
         for (let y = 0; y * step < c.height; y++) {
@@ -102,10 +102,10 @@
             if (data[(py * c.width + px) * 4 + 3] > 140) cells.push([x, y]);
           }
         }
-        // where the O's left stroke sits, in cells
-        const oLeft = 10 + g.measureText("DÉP").width;
-        const oW = g.measureText("O").width;
-        cells.oStrokeX = (oLeft + oW * 0.16) / step;
+        // where the stem of the I sits, in cells: the camera dives into it
+        const iLeft = 10 + g.measureText("BUS").width;
+        const iW = g.measureText("I").width;
+        cells.oStrokeX = (iLeft + iW * 0.5) / step;
         return cells;
       }
 
@@ -233,7 +233,7 @@
           const u2 = clamp((t - 3.4) / 1.4, 0, 1);
           const yaw = lerp(-0.78, -0.3, u) + lerp(0, 0.12, u2);
           const pitch = lerp(0.03, 0.12, u);
-          const dist = lerp(74, 106, u) + lerp(0, -5, u2);
+          const dist = lerp(90, 128, u) + lerp(0, -6, u2);
           const pos = new THREE.Vector3(
             look.x + Math.sin(yaw) * Math.cos(pitch) * dist,
             look.y + Math.sin(pitch) * dist,

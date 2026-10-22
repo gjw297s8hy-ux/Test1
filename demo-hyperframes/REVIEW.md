@@ -1,6 +1,14 @@
-# REVIEW — « Une phrase, un film »
+# REVIEW — « Vos vidéos pour vos business »
 
-Output: `renders/une-phrase-un-film.mp4` — 1920×1080, 60 fps, 30.0 s, 1 800 frames, H.264 + AAC 48 kHz, 23 MB.
+Output: `renders/vos-videos-pour-vos-business.mp4` — 1920×1080, 60 fps, 30.0 s, 1 800 frames, H.264 + AAC 48 kHz, 23 MB.
+
+## v3 (person's notes: new hook sentence, a photoreal 3D chart that makes sales climb)
+- Hook is now « VOS VIDÉOS POUR VOS BUSINESS »; the 3D voxel word is BUSINESS; the phone posts « nouvelle vidéo
+  pour notre business ».
+- The frames-per-scene chart was replaced by a photoreal Three.js studio shot: PBR lime bars with clearcoat, softbox
+  environment map, ACES tone mapping, soft shadows, an ink arrow taking off. The chart carries no figures: any
+  number there would be invented.
+- `dead_stretch` 11.5–15.5 s is kept: check cannot see the WebGL canvas, and the camera moves through it.
 
 ## v2 (person's notes: colours didn't go together; new end title)
 - Palette moved from four inks (orange, cobalt, paper, ink) to three: ink #111111, cream #F2EEE6, lime #C8F43A.
