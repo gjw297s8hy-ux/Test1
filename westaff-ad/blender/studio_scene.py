@@ -253,6 +253,8 @@ def build():
     MON = tuple(mg.matrix_world.translation + mg.matrix_world.to_3x3() @ __import__('mathutils').Vector((0, 1.0, 0)))
     A, B, C, Dd, Ee = SH['A'], SH['B'], SH['C'], SH['D'], SH['E']
     for o in studio: show(o, (A[0], A[1]), (Ee[0], 15.01))
+    for o in studio:
+        if o.name.startswith('chair'): SHOTS[o] = [(A[0], A[1])]  # le fauteuil gênerait le carton final
     for o in stage: show(o, (B[0], Dd[1]))
     anim = []
     seq = lambda n: os.path.join(ROOT, f'out/npng_seq/{n}/f0001.jpg')
@@ -300,14 +302,15 @@ def build():
     for o in [gD, sD, *pD, tg, *g1, *g2, *side, gN, *ld, gP, sP, *pP, *lp]: show(o, Dd)
     # E — carton final dans le studio (textes 3D posés au sol devant le bureau)
     redDeep = D.mat_simple('RedDeep', (0.5, 0.004, 0.01), metal=0.5, rough=0.18, coat=1.0, emit=(1.0, 0.0, 0.02), emit_strength=0.25)
-    gE = face('E_titles', (1.3, -1.3, 0))
-    _, lt = word('E_npng', P.TITLE, 1.9, 0.6, redDeep, gE, pos=(0, 0, -0.9), tracking=0.03)
-    _, ln = word('E_oneal', P.ARTIST, 0.95, 0.4, M['blackGloss'], gE, pos=(0, 0, 1.0), tracking=0.08)
-    _, lc = word('E_cta', P.CTA, 0.4, 0.25, M['blackGloss'], gE, pos=(0, 0, 2.2), tracking=0.1, fontfile='public/fonts/Inter-ExtraBold.otf')
+    gE = face('E_titles', (1.0, -1.0, 0), AZ - 0.3); gE2 = face('E_titles2', (1.0, -1.0, 0))
+    satin = D.mat_simple('SatinBlack', (0.014, 0.013, 0.014), rough=0.42, coat=0.25)
+    _, lt = word('E_npng', P.TITLE, 3.1, 1.0, redDeep, gE, pos=(0, 0, -1.2), tracking=0.03)
+    _, ln = word('E_oneal', P.ARTIST, 1.0, 0.45, satin, gE2, pos=(0, 0, 0.9), tracking=0.06)
+    _, lc = word('E_cta', P.CTA, 0.6, 0.4, satin, gE2, pos=(0, 0, 1.95), tracking=0.04, fontfile='public/fonts/Inter-ExtraBold.otf')
     for i, l in enumerate(lt): anim.append((l, drop_fn(l.location.x, Ee[0] + 0.9 + i * 0.08, 0.45)))
     for i, l in enumerate(ln): anim.append((l, drop_fn(l.location.x, Ee[0] + 1.2 + i * 0.05)))
     for i, l in enumerate(lc): anim.append((l, drop_fn(l.location.x, Ee[0] + 1.5 + i * 0.025, 0.3)))
-    for o in [gE, *lt, *ln, *lc]: show(o, (Ee[0], 15.01))
+    for o in [gE, gE2, *lt, *ln, *lc]: show(o, (Ee[0], 15.01))
     # pétales (plateau B, studio E)
     petals(M, anim, (S[0], 0, 0), B[0] - 1.5, (B[0], B[1]), 3, 34)
     petals(M, anim, (0, 0, 0), Ee[0] + 0.5, (Ee[0], 15.01), 5, 30)
