@@ -395,11 +395,11 @@ def satin_shader(b, uvsock, scale_weave=220.0):
     weave.inputs["Distortion"].default_value = 0.6
     weave.inputs["Detail"].default_value = 1.0
     nn = b.noise(uvsock, 1.2, detail=3.0)
-    col = b.mix(nn.outputs["Fac"], (0.24, 0.006, 0.010), (0.36, 0.014, 0.016))
+    col = b.mix(nn.outputs["Fac"], (0.17, 0.004, 0.008), (0.27, 0.009, 0.013))
     nrm = bump(b, weave.outputs["Fac"], 0.06, 0.002)
     p = principled(b, **{"Base Color": col, "Roughness": 0.24, "Anisotropic": 0.72, "Tangent": tg.outputs[0],
-                         "Specular IOR Level": 0.62, "Specular Tint": (1.0, 0.42, 0.30),
-                         "Sheen Weight": 0.55, "Sheen Roughness": 0.35, "Sheen Tint": (1.0, 0.30, 0.22),
+                         "Specular IOR Level": 0.62, "Specular Tint": (1.0, 0.30, 0.22),
+                         "Sheen Weight": 0.5, "Sheen Roughness": 0.35, "Sheen Tint": (1.0, 0.16, 0.12),
                          "Normal": nrm})
     tr = b.node("ShaderNodeBsdfTranslucent")
     tr.inputs[0].default_value = (0.75, 0.02, 0.02, 1)

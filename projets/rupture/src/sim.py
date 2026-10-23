@@ -584,7 +584,7 @@ TIERS = [
 ]
 STAGE_FLOOR = (-6.0, 6.0, Y0 - 1.3, Y0 + 2.6, 1.45, 1.60)
 BACKDROP = (-3.9, 3.9, Y0 + 2.15, Y0 + 2.6, 1.60, 5.55)
-GAP = 0.03
+GAP = 0.012
 
 
 def block_cells():

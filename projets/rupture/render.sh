@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 BLENDER="${BLENDER:-blender}"
 RES="${RES:-1080}"
-SAMPLES="${SAMPLES:-14}"
+SAMPLES="${SAMPLES:-10}"
 OUT="${OUT:-renders}"
 mkdir -p "$OUT"
 
