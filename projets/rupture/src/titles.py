@@ -54,7 +54,7 @@ def draw_tracked(draw, f, s, cx, y, track, fill):
 def layout(cfg):
     """elements : (cle, texte, police, taille, interlettrage en em, y du haut)"""
     els = []
-    y = 262
+    y = 205
     if cfg.get("titre"):
         els.append(("titre", cfg["titre"], cfg["police_titre"], 150, 0.07, y, cfg.get("graisse_titre", 700)))
         y += 238
@@ -66,7 +66,7 @@ def layout(cfg):
         els.append(("infos", infos.upper(), cfg["police_texte"], 26, 0.22, y, None))
         y += 60
     if cfg.get("mention"):
-        els.append(("mention", cfg["mention"], cfg["police_mention"], 28, 0.55, H - 230, None))
+        els.append(("mention", cfg["mention"], cfg["police_mention"], 26, 0.55, y + 8, None))
     return els
 
 
