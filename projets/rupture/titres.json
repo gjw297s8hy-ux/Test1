@@ -1,0 +1,22 @@
+{
+  "_note": "Configuration unique des textes. Un champ vide n'est pas affiche. Temps en secondes.",
+  "titre": "RUPTURE",
+  "signature": "LA NUIT CHANGE LES RÈGLES",
+  "artiste": "",
+  "date": "",
+  "lieu": "",
+  "mention": "PROCHAINEMENT",
+
+  "couleur": [14, 12, 11],
+  "police_titre": "fonts/BodoniModa.ttf",
+  "graisse_titre": 700,
+  "police_texte": "fonts/Inter-Medium.otf",
+  "police_mention": "fonts/Inter-SemiBold.otf",
+
+  "apparition": {
+    "titre": [14.0, 14.5],
+    "signature": [14.18, 14.62],
+    "infos": [14.3, 14.7],
+    "mention": [14.36, 14.8]
+  }
+}
