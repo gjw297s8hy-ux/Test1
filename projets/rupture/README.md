@@ -58,9 +58,20 @@ Le rendu est reprenable : les images déjà présentes dans `renders/frames` son
 - Lumière : soleil dans `build_scene` (direction commune `sim.SUN_DIR`), ciel dans `sky.py`.
 - Textes : `titres.json`.
 
+## Vérifications effectuées
+
+- `ffprobe` : H.264 High, yuv420p, 1080 × 1920, 30/1 constant, 540 images, 18,000 s ; AAC 48 kHz, 18,000 s.
+  Décodage complet sans erreur ; audio présent (moyenne −17,9 dB, crête −1,5 dB).
+- Images extraites du MP4 à 1,0 ; 2,5 ; 4,5 ; 7,0 ; 8,5 ; 10,0 ; 12,0 ; 14,8 ; 17,5 s et inspectées.
+- Raccord à 6,0 s (satin plein cadre des deux côtés), jonction entre deux sessions de rendu (12,2 s),
+  décélération de la caméra jusqu'au cadre fixe : contrôlés image par image.
+
 ## Ce qui a été réellement produit et ses limites
 
 - Moteur : Blender 4.2 Cycles **sur CPU** (4 cœurs, pas de GPU dans l'environnement).
 - Pas de simulation physique de tissu : les drapés sont procéduraux et précalculés (déterministes).
 - Pas de flou de mouvement (coût de rendu sur CPU) ; profondeur de champ réelle sur la caméra.
 - La bande son est synthétisée dans `audio.py`, sans échantillon externe.
+- Défauts connus restants : une limite visible au sol où s'arrête la zone de cristaux détaillés
+  (vers 13,3 s) ; le rouge du satin est un peu plus clair juste après le raccord de 6,0 s.
+- Calques de titres finaux : `calques/` (PNG transparents + `titres.svg` éditable).
