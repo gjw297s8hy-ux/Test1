@@ -445,8 +445,8 @@ def mat_crystal(haze):
     m, b = new_mat("Salt_Crystal")
     tc = b.node("ShaderNodeTexCoord")
     nz = b.noise(tc.outputs["Object"], 6.0, detail=3.0)
-    col = b.mix(nz.outputs["Fac"], (0.80, 0.78, 0.74), (0.92, 0.90, 0.86))
-    p = principled(b, **{"Base Color": col, "Roughness": 0.18, "Transmission Weight": 0.55, "IOR": 1.54,
+    col = b.mix(nz.outputs["Fac"], (0.86, 0.84, 0.80), (0.96, 0.95, 0.92))
+    p = principled(b, **{"Base Color": col, "Roughness": 0.22, "Transmission Weight": 0.2, "IOR": 1.54,
                          "Subsurface Weight": 0.0, "Coat Weight": 0.2})
     return finish(m, b, p.outputs[0], haze)
 
@@ -935,7 +935,7 @@ def build_scene(args):
     ang = rr.uniform(0, 2 * math.pi, n_macro)
     rad = 1.45 * rr.uniform(0, 1, n_macro) ** 1.6
     pos = np.c_[rad * np.sin(ang), rad * np.cos(ang), np.zeros(n_macro)]
-    size = 0.0015 + 0.010 * rr.power(4.0, n_macro) * (0.4 + 0.6 * np.exp(-rad / 0.5))
+    size = 0.0012 + 0.008 * rr.power(4.0, n_macro) * (0.35 + 0.65 * np.exp(-rad / 0.4))
     size *= np.where(rr.uniform(0, 1, n_macro) < 0.04, 2.2, 1.0)
     pos[:, 2] = size * rr.uniform(0.0, 0.25, n_macro)
     # pas de cristal a l'interieur de la carte

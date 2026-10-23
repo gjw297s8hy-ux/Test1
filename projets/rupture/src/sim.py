@@ -19,6 +19,10 @@ T_RESUME = 10.0
 T_REVEAL = 14.0
 T_END = 18.0
 SEED = 1977
+import os as _os
+# variantes de comparaison (meme cadrage, meme lumiere) : RUPTURE_FRONT=A|B, RUPTURE_ASSEMBLY=A|B
+FRONT_VARIANT = _os.environ.get("RUPTURE_FRONT", "A")
+ASSEMBLY_VARIANT = _os.environ.get("RUPTURE_ASSEMBLY", "A")
 
 Y0 = 28.0            # centre des gradins / de la scene finale
 
@@ -175,8 +179,8 @@ def vnoise1(x, seed):
 # Plan A : 0 -> 6 s (macro puis vol au ras du sol sous la vague)
 CAM_A = [
     # t,    position,                 cible,                  focale
-    (0.0, (-0.075, -0.6, 0.04), (0.01, 0.0, 0.165), 85.0),
-    (1.2, (-0.065, -0.57, 0.038), (0.008, 0.0, 0.11), 85.0),
+    (0.0, (-0.075, -0.62, 0.30), (0.01, 0.0, 0.165), 85.0),
+    (1.2, (-0.068, -0.58, 0.17), (0.008, 0.0, 0.11), 85.0),
     (2.5, (-0.055, -0.54, 0.036), (0.0, 0.0, 0.03), 85.0),
     (2.9, (-0.07, -0.5, 0.045), (0.25, 0.8, 0.08), 70.0),
     (3.35, (-0.2, -0.3, 0.1), (3.5, 9.0, 1.8), 30.0),
@@ -375,7 +379,7 @@ E_DIR = np.array([-math.sin(ALPHA), math.cos(ALPHA), 0.0])    # le long de la cr
 R0 = 2.2             # la carte reste sur une ile intacte
 R_MAX = 62.0
 E_MIN, E_MAX = -16.0, 78.0
-SHEET_NPSI = 241     # echantillons le long de la crete (e)
+SHEET_NPSI = 377     # echantillons le long de la crete (e)
 SHEET_NR = 301       # echantillons dans le sens de propagation (d)
 CRUST_T = 0.8        # epaisseur de la croute
 T_TEAR0 = 2.80
@@ -464,7 +468,11 @@ def _sheet_eval(ES, DS, t):
 
 
 def satin_front(t, ell):
-    """sigma au-dela duquel la face interieure est du satin (part de la levre, descend vers le pied)"""
+    """sigma au-dela duquel la face interieure est du satin.
+    A : part de la levre (premiere matiere arrachee, cote impact) et descend vers le pied.
+    B : suit le pied a distance fixe (le satin apparait des que la croute se dresse)."""
+    if FRONT_VARIANT == "B":
+        return 1.2 + 0.07 * ell + 0.0 * t
     g = float(smoother(T_SAT0, T_SAT1, t))
     return ell * (1.0 - g) + 1.0 - 2.0 * g
 
@@ -481,7 +489,7 @@ def sheet_state(t):
     fold_amp = sat * smoothstep(0.0, 5.0, behind) * (0.35 + 0.65 * smoothstep(3, 25, ell))
     ph = 0.35 * DS + 0.8 * np.sin(DS * 0.11 + ES * 0.05)
     folds = (0.42 * np.sin(ES * (2 * math.pi / 3.6) + ph) +
-             0.16 * np.sin(ES * (2 * math.pi / 1.4) - 1.3 * ph + 1.7) +
+             0.10 * np.sin(ES * (2 * math.pi / 2.3) - 1.3 * ph + 1.7) +
              0.12 * np.sin(ES * (2 * math.pi / 8.3) + 0.08 * DS))
     P = P - N * (folds * fold_amp)[..., None]
     _, crack = ring_field(P[..., 0], P[..., 1], t)
@@ -653,7 +661,12 @@ def block_layout():
     for b in blocks:
         c = b["cell"]
         r = math.hypot(b["F"][0] / 10.0, (b["F"][1] - Y0) / 4.5)
-        b["t0"] = 10.38 + 0.62 * c["tier"] + 0.42 * r + rng.uniform(0, 0.12)
+        if ASSEMBLY_VARIANT == "B":
+            # vague unique d'ouest en est, tous gradins confondus
+            b["t0"] = 10.38 + 0.085 * (b["F"][0] + 10.5) + 0.25 * c["tier"] + rng.uniform(0, 0.1)
+        else:
+            # gradin par gradin, du centre vers l'exterieur
+            b["t0"] = 10.38 + 0.62 * c["tier"] + 0.42 * r + rng.uniform(0, 0.12)
         b["dur"] = 1.55 + rng.uniform(-0.12, 0.12)
     _LAYOUT = blocks
     return blocks
@@ -924,7 +937,10 @@ def ribbons_state(t, block_states):
         # morphose vers l'auvent
         t0 = st["t0"][k]
         if t > t0:
-            Ug, Vg = np.meshgrid(uu, (k + vv) / K_STRIPS, indexing="ij")
+            # tant que toutes les bandes ne sont pas posees, elles se chevauchent (pas de jour entre elles)
+            g_all = float(smoother(0, 1, (t - st["t0"].max() - 0.55) / 1.75))
+            ov = 0.3 * (1.0 - g_all)
+            Ug, Vg = np.meshgrid(uu, np.clip((k + vv * (1 + 2 * ov) - ov) / K_STRIPS, 0, 1), indexing="ij")
             F = canopy_final(Ug, Vg)
             w_ = smoother(0, 1, (t - t0 - 0.55 * Ug) / 1.75)
             arc = np.sin(math.pi * w_) * (2.5 + 2.0 * np.sin(Ug * 3.0 + k))
