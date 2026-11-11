@@ -21,6 +21,7 @@ const WRITER_SYSTEM = `Tu rédiges des messages de prospection B2B en français 
 
 Ce qui fait un bon message ici :
 - Il parle d'abord du destinataire : une accroche tirée d'un fait précis de sa fiche (activité, actualité, signal), puis le lien avec l'offre, puis une seule proposition simple (un court échange, une question).
+- Quand la fonction du prospect est « Adresse générale de l'entreprise », le message s'adresse à l'entreprise : « Bonjour, » sans nom de personne, et il demande en une phrase de transmettre à la personne concernée.
 - Il n'affirme que ce qui figure dans la fiche. Pas de chiffre, de client de référence ou de résultat inventé : un message faux engage la réputation de l'expéditeur.
 - Ton naturel, vouvoiement, phrases courtes, aucune formule creuse (« j'espère que vous allez bien », « je me permets de »), pas de majuscules ni de ponctuation insistantes.
 - Texte brut, sans mise en forme Markdown. N'ajoute pas de lien de désinscription ni de mention légale : l'application les ajoute à l'envoi.
@@ -41,6 +42,7 @@ const ProspectSchema = z.object({
       size: z.string().describe("Effectif ou taille, tel que trouvé"),
       description: z.string().describe("Activité en une ou deux phrases"),
       phone: z.string().describe("Standard de l'entreprise"),
+      email: z.string().describe("Adresse e-mail générale publiée par l'entreprise (contact@, partenariats@...), vide si aucune"),
       fitReason: z.string().describe("Pourquoi cette entreprise correspond à la cible, en deux phrases"),
       score: z.number().int().describe("Adéquation avec la cible, de 0 à 100"),
       insights: z.string().describe("Faits récents ou signaux utiles pour une accroche, un par ligne, avec leur URL ; vide si aucun"),
@@ -66,6 +68,7 @@ const EnrichSchema = z.object({
   city: z.string(),
   size: z.string(),
   phone: z.string(),
+  email: z.string().describe("Adresse e-mail générale publiée par l'entreprise (contact@, partenariats@...), vide si aucune"),
   insights: z.string().describe("3 à 5 faits récents ou signaux utiles pour une accroche, un par ligne, chacun avec son URL source"),
   score: z.number().int().describe("Adéquation avec la cible, de 0 à 100"),
   scoreReason: z.string().describe("Justification du score en deux phrases"),
@@ -192,6 +195,22 @@ function cleanEmail(email: string): string {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : "";
 }
 
+export const GENERIC_CONTACT_TITLE = "Adresse générale de l'entreprise";
+
+/**
+ * Sans interlocuteur nominatif joignable par e-mail, on garde l'adresse generale de l'entreprise
+ * (contact@, partenariats@...) : en B2B, c'est souvent la seule porte d'entree publiee.
+ */
+async function saveGenericContact(orgId: string, companyId: string, email: string, phone: string): Promise<number> {
+  const clean = cleanEmail(email);
+  if (!clean) return 0;
+  const reachable = await db.contact.count({ where: { orgId, companyId, email: { not: "" } } });
+  if (reachable > 0) return 0;
+  return saveContacts(orgId, companyId, [
+    { firstName: "", lastName: "Accueil", jobTitle: GENERIC_CONTACT_TITLE, email: clean, phone, linkedinUrl: "", sourceUrl: "" },
+  ]);
+}
+
 async function saveContacts(orgId: string, companyId: string, contacts: FoundContact[]): Promise<number> {
   let created = 0;
   for (const c of contacts) {
@@ -267,7 +286,7 @@ ${known.map((k) => k.domain || k.name).join(", ") || "Aucune"}
 
 Ne propose pas les entreprises déjà dans le CRM. Privilégie des entreprises réelles et en activité dont tu as vu le site.
 
-Pour chaque entreprise, note : nom, site web, ville, secteur, taille, activité en une ou deux phrases, téléphone du standard, l'URL de la page source, et les faits récents utiles pour une accroche que tu as croisés (actualité, recrutement, ouverture), avec leur URL. Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible, justifié en deux phrases. Sois exigeant : 80 et plus seulement si l'entreprise correspond nettement et montre un signal de besoin.
+Pour chaque entreprise, note : nom, site web, ville, secteur, taille, activité en une ou deux phrases, téléphone du standard, adresse e-mail générale publiée (contact@, partenariats@…), l'URL de la page source, et les faits récents utiles pour une accroche que tu as croisés (actualité, recrutement, ouverture), avec leur URL. Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible, justifié en deux phrases. Sois exigeant : 80 et plus seulement si l'entreprise correspond nettement et montre un signal de besoin.
 
 Économise tes recherches : une recherche qui renvoie une liste d'entreprises (annuaire, classement, article) vaut mieux que plusieurs recherches sur une seule. Puis, si tu les trouves, un ou deux interlocuteurs (${campaign.roles || "dirigeant ou responsable concerné"}) avec prénom, nom, fonction, e-mail professionnel, téléphone professionnel, URL du profil LinkedIn, et l'URL de la page où tu as trouvé ces informations.
 
@@ -313,6 +332,7 @@ Si tu trouves moins de ${count} entreprises solides, donne celles que tu as : la
     });
     companies++;
     contacts += await saveContacts(orgId, company.id, c.contacts);
+    contacts += await saveGenericContact(orgId, company.id, c.email, c.phone);
     await db.activity.create({
       data: { orgId, companyId: company.id, kind: "agent", summary: `Trouvée par l'agent (campagne « ${campaign.name} »)` },
     });
@@ -357,7 +377,7 @@ ${org.offer || company.campaign?.pitch || "Non renseignée"}
 ${company.campaign ? campaignBrief(company.campaign) : "Non précisée : juge l'adéquation avec notre offre."}
 </cible_ideale>
 
-Note : son activité, son secteur, sa ville, sa taille, le téléphone du standard ; de 3 à 5 faits récents ou signaux utiles pour une accroche (actualité, recrutement, ouverture, événement, nouveauté), chacun avec son URL ; les interlocuteurs pertinents (${company.campaign?.roles || "dirigeant ou responsable concerné"}) avec leurs coordonnées professionnelles publiées et l'URL source.
+Note : son activité, son secteur, sa ville, sa taille, le téléphone du standard, l'adresse e-mail générale publiée (contact@, partenariats@…) ; de 3 à 5 faits récents ou signaux utiles pour une accroche (actualité, recrutement, ouverture, événement, nouveauté), chacun avec son URL ; les interlocuteurs pertinents (${company.campaign?.roles || "dirigeant ou responsable concerné"}) avec leurs coordonnées professionnelles publiées et l'URL source.
 
 Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible idéale, justifié en deux phrases. Sois exigeant : 80 et plus seulement si l'entreprise correspond nettement et montre un signal d'intérêt ou de besoin.`,
       });
@@ -382,6 +402,7 @@ Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible idé
         },
       });
       await saveContacts(orgId, company.id, data.contacts);
+      await saveGenericContact(orgId, company.id, data.email, data.phone);
       await db.activity.create({
         data: { orgId, companyId: company.id, kind: "agent", summary: `Enrichie par l'agent : score ${data.score}/100` },
       });
