@@ -350,3 +350,50 @@ def test_file_product_and_admin_edits(tmp_path, monkeypatch):
         await shop.tap(ADMIN, f"a:delok:{pid}")
         assert await shop.db.get_product(pid) is None
     run(go())
+
+
+def test_miniapp_button_and_order(tmp_path, monkeypatch):
+    import base64
+    import json
+    from urllib.parse import parse_qs, urlparse
+
+    from bot.miniapp import MAX_URL, miniapp_url
+
+    async def go():
+        shop = await Shop(tmp_path, miniapp_url="https://example.org/shop/").start()
+        fake_rate(monkeypatch)
+        pid = await shop.add_keys(name="Clé é", keys=("K1", "K2"))
+
+        # /start sends a reply keyboard whose button opens the page with the catalogue in the link.
+        await shop.say(BUYER, "/start")
+        keyboards = [m.reply_markup for m in shop.session.calls if getattr(m, "chat_id", None) == BUYER
+                     and getattr(getattr(m, "reply_markup", None), "keyboard", None)]
+        url = keyboards[-1].keyboard[0][0].web_app.url
+        raw = parse_qs(urlparse(url).query)["d"][0]
+        data = json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))
+        assert data["p"] == [[pid, "Clé é", "", 1000, 2]] and data["c"] == [["BTC", "Bitcoin (BTC)"], ["XMR", "XMR"]]
+
+        # The page answers with sendData; the bot creates the order and shows how to pay.
+        async def send(payload):
+            shop.n += 1
+            await shop.dp.feed_update(shop.bot, Update.model_validate({"update_id": shop.n, "message": {
+                "message_id": shop.n, "date": int(time.time()), "chat": {"id": BUYER, "type": "private"},
+                "from": shop._user(BUYER), "web_app_data": {"data": payload, "button_text": "x"}}}))
+
+        await send(json.dumps({"p": pid, "q": 2, "c": "BTC"}))
+        order = (await shop.db.user_orders(BUYER))[0]
+        assert order["qty"] == 2 and order["status"] == "pending" and BTC_ADDR in shop.session.texts(BUYER)[-1]
+
+        await send(json.dumps({"p": pid, "q": 1, "c": "BTC"}))                      # nothing left
+        assert "Stock insuffisant" in shop.session.texts(BUYER)[-1]
+        await send("not json")
+        assert "illisible" in shop.session.texts(BUYER)[-1]
+        await send(json.dumps({"p": pid, "q": 1, "c": "DOGE"}))                     # coin the shop does not take
+        assert "indisponible" in shop.session.texts(BUYER)[-1]
+        assert len(await shop.db.user_orders(BUYER)) == 1
+
+        # A large catalogue still yields a link Telegram accepts.
+        many = [{"id": i, "name": f"Produit numéro {i}", "description": "d" * 200, "price_cents": 999,
+                 "in_stock": 5, "kind": "stock"} for i in range(200)]
+        assert len(miniapp_url(shop.cfg, many)) <= MAX_URL
+    run(go())

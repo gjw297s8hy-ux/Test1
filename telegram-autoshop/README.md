@@ -67,6 +67,36 @@ livre quand il voit une transaction de ce montant exact.
   de la commande.
 - Les remboursements se font à la main, depuis votre portefeuille.
 
+## Mini app (boutique en 3D dans Telegram)
+
+Le dossier `miniapp/` contient une page de boutique qui s'ouvre dans Telegram : fond en 3D temps
+réel (océan au coucher du soleil), produits en cartes, choix de la quantité et de la crypto.
+Elle est facultative : sans elle, le bot fonctionne avec ses boutons habituels.
+
+La page n'a pas de serveur. Le bot lui transmet le catalogue dans le lien du bouton, et la page
+renvoie le choix du client au bot, qui répond dans la conversation avec l'adresse et le montant.
+
+Mise en place :
+
+1. Mettez le dossier `miniapp/` en ligne sur un hébergeur de pages statiques en `https`
+   (Netlify, Cloudflare Pages...). Sur Netlify : créez un compte gratuit, puis
+   « Add new site » → « Deploy manually » et glissez-y le dossier `miniapp`.
+2. Copiez l'adresse obtenue dans `.env` : `MINIAPP_URL=https://votre-adresse.netlify.app/`
+3. Relancez le bot et envoyez `/start` : un bouton « 🌴 Ouvrir la boutique » apparaît en bas de l'écran.
+
+À savoir :
+
+- Le catalogue affiché est celui du dernier `/start` du client. Le bot revérifie toujours le
+  stock réel au moment de la commande.
+- Le lien ne peut pas contenir un catalogue illimité : au-delà d'une vingtaine de produits, les
+  descriptions puis les derniers produits sont retirés de la mini app (ils restent dans le
+  catalogue à boutons).
+- La page ne contient ni jeton ni adresse crypto.
+- `miniapp/scene.js` est généré à partir de `miniapp/src/scene.js` avec la bibliothèque
+  [three.js](https://threejs.org) (licence MIT), dont provient aussi `waternormals.jpg`.
+  Pour le régénérer : `npm i three esbuild` puis
+  `npx esbuild src/scene.js --bundle --minify --format=iife --outfile=scene.js`.
+
 ## Tests
 
 ```bash
@@ -88,3 +118,5 @@ Les tests tournent sans Telegram ni réseau : ils simulent un client et un admin
 | `bot/payments.py` | Surveillance des paiements et livraison |
 | `bot/handlers/user.py` | Menus client |
 | `bot/handlers/admin.py` | Menus admin |
+| `bot/miniapp.py` | Lien et bouton de la mini app |
+| `miniapp/` | La page de la mini app (à héberger) |

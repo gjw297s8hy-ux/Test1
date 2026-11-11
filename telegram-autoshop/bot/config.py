@@ -23,6 +23,8 @@ class Config:
     max_pending: int = 3
     trongrid_key: str = ""
     db_path: str = "shop.db"
+    # https address of the Mini App page; empty = no Mini App button
+    miniapp_url: str = ""
     # how long after expiry a late payment is still recognised
     late_grace: int = 6 * 3600
 
@@ -57,8 +59,13 @@ def load_config() -> Config:
     if not wallets and not extra:
         raise SystemExit("Aucune adresse crypto configuree (WALLET_BTC, WALLET_LTC, ...).")
 
+    miniapp = (env("MINIAPP_URL") or "").strip()
+    if miniapp and not miniapp.startswith("https://"):
+        raise SystemExit("MINIAPP_URL doit commencer par https:// (Telegram refuse les autres adresses).")
+
     return Config(
         token=token,
+        miniapp_url=miniapp,
         admin_ids=admins,
         shop_name=(env("SHOP_NAME") or "Auto Shop").strip(),
         fiat=(env("FIAT") or "EUR").strip().upper(),

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Boutique</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --ink: #fff8ee;
+    --ink-soft: rgba(255, 248, 238, .72);
+    --glass: rgba(6, 34, 44, .46);
+    --glass-strong: rgba(5, 26, 34, .82);
+    --edge: rgba(255, 255, 255, .16);
+    --mango: #ffb23e;
+    --coral: #ff5d73;
+    --lagoon: #29e0c8;
+    --radius: 22px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    color: var(--ink);
+    font: 16px/1.4 ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    /* Shown until the 3D scene draws, and kept if WebGL is unavailable. */
+    background: linear-gradient(180deg, #2a3f73 0%, #b65a6e 30%, #ff9a52 46%, #0f6c78 47%, #04303c 100%) fixed;
+    overflow-x: hidden;
+  }
+  #sea { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; opacity: 0; transition: opacity 1.2s ease; filter: saturate(1.45) contrast(1.06); }
+  #sea.on { opacity: 1; }
+  /* Darkens the lower part of the view so text stays readable over bright water. */
+  .veil { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(120% 34% at 50% 9%, rgba(48,12,44,.62), rgba(48,12,44,0) 72%),
+      linear-gradient(180deg, rgba(20,10,40,.22) 0%, rgba(4,20,30,0) 24%, rgba(4,22,30,.30) 60%, rgba(3,18,24,.70) 100%); }
+
+  main { position: relative; z-index: 2; max-width: 560px; margin: 0 auto;
+    padding: calc(env(safe-area-inset-top) + 26px) 16px calc(env(safe-area-inset-bottom) + 40px); }
+
+  header { text-align: center; padding: 30px 0 40px; }
+  .kicker { letter-spacing: .34em; text-transform: uppercase; font-size: 11px; font-weight: 800; color: #fff; text-shadow: 0 1px 10px rgba(50,10,30,.9); }
+  h1 { margin: 8px 0 6px; font-size: clamp(38px, 12vw, 58px); line-height: 1; font-weight: 900; letter-spacing: -.02em;
+    background: linear-gradient(180deg, #fff 20%, #ffe2b0 60%, var(--mango) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 2px rgba(60, 14, 30, .55)) drop-shadow(0 8px 26px rgba(40, 8, 30, .7)); overflow-wrap: anywhere; }
+  .tag { margin: 0; color: #fff; font-size: 14px; font-weight: 600; text-shadow: 0 1px 10px rgba(50,10,30,.95), 0 0 3px rgba(50,10,30,.6); }
+
+  .notice { margin: 0 0 14px; padding: 12px 14px; border-radius: 16px; font-size: 13px;
+    background: rgba(255, 178, 62, .16); border: 1px solid rgba(255, 178, 62, .4); }
+
+  .grid { display: grid; gap: 14px; perspective: 900px; }
+  .card { position: relative; display: block; width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer;
+    padding: 18px; border-radius: var(--radius); border: 1px solid var(--edge);
+    background: linear-gradient(150deg, rgba(255,255,255,.14), rgba(255,255,255,.03) 45%), var(--glass);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
+    box-shadow: 0 18px 40px -18px rgba(0, 10, 16, .8), inset 0 1px 0 rgba(255,255,255,.22);
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transform-style: preserve-3d;
+    transition: transform .25s ease, box-shadow .25s ease;
+    animation: rise .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  .card:active { transform: scale(.98); }
+  .card[disabled] { opacity: .55; cursor: default; }
+  /* Light sweep that follows the finger, like sun on wet glass. */
+  .card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(220px circle at var(--mx, 50%) var(--my, -20%), rgba(255, 226, 170, .26), transparent 65%); }
+  @keyframes rise { from { opacity: 0; transform: translateY(26px) rotateX(-10deg); } }
+  .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .name { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .desc { margin: 6px 0 0; font-size: 13.5px; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .price { flex: none; font-size: 18px; font-weight: 900; color: #1c1206; padding: 6px 12px; border-radius: 999px;
+    background: linear-gradient(135deg, #ffd98a, var(--mango) 55%, #ff8a4c); box-shadow: 0 6px 16px -6px rgba(255, 150, 60, .9); white-space: nowrap; }
+  .stock { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lagoon); box-shadow: 0 0 10px var(--lagoon); }
+  .out .dot { background: var(--coral); box-shadow: 0 0 10px var(--coral); }
+  .empty { text-align: center; padding: 40px 10px; color: var(--ink-soft); }
+
+  .scrim { position: fixed; inset: 0; z-index: 9; background: rgba(2, 12, 18, .55); opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; max-width: 560px; margin: 0 auto;
+    padding: 12px 18px calc(env(safe-area-inset-bottom) + 20px); border-radius: 28px 28px 0 0;
+    background: var(--glass-strong); border-top: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(26px) saturate(1.6); backdrop-filter: blur(26px) saturate(1.6);
+    transform: translateY(105%); transition: transform .38s cubic-bezier(.2,.9,.2,1); max-height: 88vh; overflow-y: auto; }
+  .open .scrim { opacity: 1; pointer-events: auto; }
+  .open .sheet { transform: none; }
+  .grab { width: 44px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3); margin: 0 auto 14px; }
+  .sheet h2 { margin: 0; font-size: 22px; font-weight: 900; overflow-wrap: anywhere; }
+  .label { margin: 18px 0 8px; font-size: 11px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); }
+  .qty { display: flex; align-items: center; gap: 14px; }
+  .qty button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--edge); background: rgba(255,255,255,.08);
+    color: var(--ink); font-size: 24px; font-weight: 700; cursor: pointer; }
+  .qty button:disabled { opacity: .35; }
+  .qty output { min-width: 34px; text-align: center; font-size: 22px; font-weight: 900; }
+  .coins { display: flex; flex-wrap: wrap; gap: 8px; }
+  .coin { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--edge); background: rgba(255,255,255,.07);
+    color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .coin[aria-pressed="true"] { background: var(--lagoon); border-color: var(--lagoon); color: #03242a; box-shadow: 0 0 22px -4px var(--lagoon); }
+  .total { display: flex; justify-content: space-between; align-items: baseline; margin: 22px 0 12px; font-weight: 700; color: var(--ink-soft); }
+  .total b { font-size: 26px; font-weight: 900; color: var(--ink); }
+  .go { width: 100%; padding: 16px; border: 0; border-radius: 18px; cursor: pointer; font: inherit; font-size: 17px; font-weight: 900; color: #23100a;
+    background: linear-gradient(135deg, #ffd98a, var(--mango) 45%, var(--coral)); box-shadow: 0 14px 30px -12px rgba(255, 110, 90, .9); }
+  .go:disabled { filter: grayscale(.7); opacity: .6; }
+  .hint { margin: 12px 0 0; text-align: center; font-size: 12px; color: var(--ink-soft); }
+  @media (prefers-reduced-motion: reduce) { .card, .sheet, .scrim { animation: none; transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="sea" aria-hidden="true"></canvas>
+<div class="veil"></div>
+
+<main>
+  <header>
+    <div class="kicker">Boutique</div>
+    <h1 id="shop">Boutique</h1>
+    <p class="tag">Paiement crypto · livraison automatique</p>
+  </header>
+  <div id="notice" class="notice" hidden></div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="s-name">
+  <div class="grab"></div>
+  <h2 id="s-name"></h2>
+  <p class="desc" id="s-desc"></p>
+  <div id="s-qty-block">
+    <div class="label">Quantité</div>
+    <div class="qty">
+      <button type="button" id="minus" aria-label="Moins">−</button>
+      <output id="qty">1</output>
+      <button type="button" id="plus" aria-label="Plus">+</button>
+    </div>
+  </div>
+  <div class="label">Payer en</div>
+  <div class="coins" id="coins"></div>
+  <div class="total"><span>Total</span><b id="total"></b></div>
+  <button type="button" class="go" id="go">Commander</button>
+  <p class="hint">Le bot vous envoie ensuite l'adresse et le montant à payer.</p>
+</section>
+
+<script src="scene.js"></script>
+<script>
+(function () {
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var inTelegram = !!(tg && tg.platform && tg.platform !== 'unknown');
+  if (tg) {
+    try { tg.ready(); tg.expand(); tg.setHeaderColor('#2a3f73'); tg.setBackgroundColor('#04303c'); } catch (e) {}
+  }
+
+  // The bot passes the catalogue in the link: ?d=<base64url JSON>
+  // {n: shop name, f: currency, c: [[code, label]], p: [[id, name, description, cents, stock or -1]]}
+  function readCatalogue() {
+    var raw = new URLSearchParams(location.search).get('d');
+    if (!raw) return null;
+    try {
+      var b64 = raw.replace(/-/g, '+').replace(/_/g, '/');
+      var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+      return JSON.parse(new TextDecoder().decode(bytes));
+    } catch (e) { return null; }
+  }
+
+  var DEMO = { n: 'Aperçu', f: 'EUR', c: [['BTC', 'Bitcoin (BTC)'], ['ETH', 'ETH']],
+    p: [[1, 'Produit exemple', 'Ceci est un aperçu. Ouvrez la boutique depuis le bot pour voir le vrai catalogue.', 990, 5],
+        [2, 'Fichier exemple', 'Livré instantanément après paiement.', 1500, -1]] };
+  var data = readCatalogue();
+  var notice = document.getElementById('notice');
+  if (!data) { data = DEMO; notice.textContent = 'Aperçu : ouvrez la boutique depuis le bouton du bot pour commander.'; notice.hidden = false; }
+  else if (!inTelegram) { notice.textContent = 'Ouvrez cette boutique depuis le bouton du bot Telegram pour commander.'; notice.hidden = false; }
+
+  function money(cents) {
+    try { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: data.f }).format(cents / 100); }
+    catch (e) { return (cents / 100).toFixed(2) + ' ' + data.f; }
+  }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+
+  document.getElementById('shop').textContent = data.n;
+  document.title = data.n;
+
+  var grid = document.getElementById('grid');
+  if (!data.p.length) grid.appendChild(el('p', 'empty', 'La boutique est vide pour le moment. Revenez bientôt.'));
+  data.p.forEach(function (p, i) {
+    var id = p[0], name = p[1], desc = p[2], cents = p[3], stock = p[4];
+    var out = stock === 0;
+    var card = el('button', 'card' + (out ? ' out' : ''));
+    card.type = 'button'; card.disabled = out; card.style.setProperty('--i', i);
+    var row = el('div', 'row');
+    var left = el('div');
+    left.appendChild(el('h3', 'name', name));
+    if (desc) left.appendChild(el('p', 'desc', desc));
+    row.appendChild(left); row.appendChild(el('span', 'price', money(cents)));
+    card.appendChild(row);
+    var s = el('span', 'stock'); s.appendChild(el('i', 'dot'));
+    s.appendChild(document.createTextNode(out ? 'Rupture de stock' : stock < 0 ? 'Disponible' : stock + ' en stock'));
+    card.appendChild(s);
+    card.addEventListener('click', function () { openSheet(p); });
+    // 3D tilt and light following the finger.
+    card.addEventListener('pointermove', function (e) {
+      var r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--ry', ((x - .5) * 9).toFixed(2) + 'deg');
+      card.style.setProperty('--rx', ((.5 - y) * 9).toFixed(2) + 'deg');
+      card.style.setProperty('--mx', (x * 100).toFixed(0) + '%'); card.style.setProperty('--my', (y * 100).toFixed(0) + '%');
+    });
+    card.addEventListener('pointerleave', function () { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); });
+    grid.appendChild(card);
+  });
+
+  // ---- order sheet
+  var current = null, qty = 1, coin = data.c.length ? data.c[0][0] : null;
+  var qtyOut = document.getElementById('qty'), minus = document.getElementById('minus'), plus = document.getElementById('plus');
+  var go = document.getElementById('go'), coinsBox = document.getElementById('coins');
+
+  data.c.forEach(function (c) {
+    var b = el('button', 'coin', c[1]); b.type = 'button'; b.dataset.code = c[0];
+    b.addEventListener('click', function () { coin = c[0]; refresh(); if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); });
+    coinsBox.appendChild(b);
+  });
+
+  function maxQty() { return current && current[4] > 0 ? Math.min(current[4], 50) : 1; }
+  function refresh() {
+    qtyOut.textContent = qty;
+    minus.disabled = qty <= 1; plus.disabled = qty >= maxQty();
+    document.getElementById('total').textContent = current ? money(current[3] * qty) : '';
+    Array.prototype.forEach.call(coinsBox.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.code === coin)); });
+    go.disabled = !coin || !inTelegram;
+  }
+  function openSheet(p) {
+    current = p; qty = 1;
+    document.getElementById('s-name').textContent = p[1];
+    document.getElementById('s-desc').textContent = p[2] || '';
+    document.getElementById('s-qty-block').hidden = p[4] < 0;   // unlimited products are sold one at a time
+    refresh();
+    document.body.classList.add('open');
+    if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  }
+  function closeSheet() { document.body.classList.remove('open'); }
+  document.getElementById('scrim').addEventListener('click', closeSheet);
+  minus.addEventListener('click', function () { if (qty > 1) { qty--; refresh(); } });
+  plus.addEventListener('click', function () { if (qty < maxQty()) { qty++; refresh(); } });
+  go.addEventListener('click', function () {
+    if (!current || !coin || !inTelegram) return;
+    go.disabled = true; go.textContent = 'Envoi…';
+    // Telegram delivers this to the bot as a message and closes the Mini App.
+    tg.sendData(JSON.stringify({ p: current[0], q: qty, c: coin }));
+  });
+
+  // ---- 3D backdrop
+  try {
+    var canvas = document.getElementById('sea');
+    var scene = window.startScene(canvas, 'waternormals.jpg');
+    requestAnimationFrame(function () { canvas.classList.add('on'); });
+    window.addEventListener('scroll', function () {
+      var max = document.documentElement.scrollHeight - innerHeight;
+      scene.setScroll(max > 0 ? scrollY / max : 0);
+    }, { passive: true });
+  } catch (e) { /* no WebGL: the CSS gradient stays */ }
+})();
+</script>
+</body>
+</html>

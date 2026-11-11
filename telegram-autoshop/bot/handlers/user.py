@@ -1,6 +1,7 @@
 """Customer side: catalogue, checkout, orders."""
 from __future__ import annotations
 
+import json
 import logging
 import time
 from html import escape
@@ -16,6 +17,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from ..chains import COINS, format_amount, get_rate, to_atomic
 from ..config import Config
 from ..db import Database
+from ..miniapp import miniapp_keyboard
 from ..payments import check_orders, notify_admins
 
 log = logging.getLogger("shop.user")
@@ -100,6 +102,12 @@ async def start(message: Message, state: FSMContext, db: Database, cfg: Config) 
     await state.clear()
     await db.upsert_user(message.from_user.id, message.from_user.username)
     text, markup = home_view(cfg)
+    if cfg.miniapp_url:
+        # Two messages: a message carries one keyboard, and the Mini App button must be a reply keyboard.
+        await message.answer(
+            f"🌴 <b>{escape(cfg.shop_name)}</b> — la boutique s'ouvre avec le bouton en bas de l'écran.",
+            reply_markup=miniapp_keyboard(cfg, await db.list_products()),
+        )
     await message.answer(text, reply_markup=markup)
 
 
@@ -188,17 +196,16 @@ async def choose_coin(cb: CallbackQuery, m, cfg: Config) -> None:
     await show(cb, "💳 Choisissez votre moyen de paiement :", kb(*rows))
 
 
-@router.callback_query(F.data.regexp(r"^pay:(\d+):(\d+):([A-Z0-9_]+)$").as_("m"))
-async def create_order(cb: CallbackQuery, m, db: Database, cfg: Config, http: aiohttp.ClientSession) -> None:
-    code = m.group(3)
-    product = await db.get_product(int(m.group(1)))
+async def place_order(
+    user, product_id: int, qty: int, code: str, db: Database, cfg: Config, http: aiohttp.ClientSession
+) -> tuple[dict | None, str]:
+    """Create a pending order. Returns (order, "") or (None, reason shown to the customer)."""
+    product = await db.get_product(product_id)
     if not product or not product["active"]:
-        await cb.answer("Ce produit n'est plus disponible.", show_alert=True)
-        return
-    qty = max(1, min(int(m.group(2)), MAX_QTY)) if product["kind"] == "stock" else 1
-    if await db.count_pending(cb.from_user.id) >= cfg.max_pending:
-        await cb.answer("Vous avez trop de commandes en attente. Payez-les ou annulez-les d'abord.", show_alert=True)
-        return
+        return None, "Ce produit n'est plus disponible."
+    qty = max(1, min(qty, MAX_QTY)) if product["kind"] == "stock" else 1
+    if await db.count_pending(user.id) >= cfg.max_pending:
+        return None, "Vous avez trop de commandes en attente. Payez-les ou annulez-les d'abord."
 
     if code in cfg.wallets and code in COINS:
         coin = COINS[code]
@@ -206,24 +213,48 @@ async def create_order(cb: CallbackQuery, m, db: Database, cfg: Config, http: ai
             rate = await get_rate(http, coin, cfg.fiat)
         except Exception as exc:
             log.warning("rate lookup failed: %s", exc)
-            await cb.answer("Taux de change indisponible, réessayez dans un instant.", show_alert=True)
-            return
+            return None, "Taux de change indisponible, réessayez dans un instant."
         address, base, jitter = cfg.wallets[code], to_atomic(product["price_cents"] * qty, rate, coin), coin.jitter
     elif code in cfg.extra_wallets:
         address, base, jitter = cfg.extra_wallets[code], 0, 0
     else:
-        await cb.answer("Moyen de paiement indisponible.", show_alert=True)
-        return
+        return None, "Moyen de paiement indisponible."
 
-    await db.upsert_user(cb.from_user.id, cb.from_user.username)
+    await db.upsert_user(user.id, user.username)
     order = await db.create_order(
-        user_id=cb.from_user.id, product=product, qty=qty, fiat=cfg.fiat, coin=code, address=address,
+        user_id=user.id, product=product, qty=qty, fiat=cfg.fiat, coin=code, address=address,
         base_amount=base, jitter=jitter, ttl=cfg.order_ttl, late_grace=cfg.late_grace,
     )
     if not order:
-        await cb.answer("Stock insuffisant pour cette quantité.", show_alert=True)
+        return None, "Stock insuffisant pour cette quantité."
+    return order, ""
+
+
+@router.callback_query(F.data.regexp(r"^pay:(\d+):(\d+):([A-Z0-9_]+)$").as_("m"))
+async def create_order(cb: CallbackQuery, m, db: Database, cfg: Config, http: aiohttp.ClientSession) -> None:
+    order, error = await place_order(cb.from_user, int(m.group(1)), int(m.group(2)), m.group(3), db, cfg, http)
+    if not order:
+        await cb.answer(error, show_alert=True)
         return
     await show(cb, *order_view(order, cfg))
+
+
+@router.message(F.web_app_data)
+async def miniapp_order(message: Message, db: Database, cfg: Config, http: aiohttp.ClientSession) -> None:
+    """An order sent from the Mini App: {"p": product id, "q": quantity, "c": coin code}."""
+    try:
+        data = json.loads(message.web_app_data.data)
+        product_id, qty, code = int(data["p"]), int(data.get("q", 1)), str(data["c"])
+    except (ValueError, KeyError, TypeError):
+        await message.answer("Commande illisible. Rouvrez la boutique et réessayez.")
+        return
+    order, error = await place_order(message.from_user, product_id, qty, code, db, cfg, http)
+    if not order:
+        # The page shows the catalogue as it was when the button was sent; send a fresh one.
+        await message.answer(f"❌ {error}", reply_markup=miniapp_keyboard(cfg, await db.list_products()))
+        return
+    text, markup = order_view(order, cfg)
+    await message.answer(text, reply_markup=markup)
 
 
 # ------------------------------------------------------------------ orders
