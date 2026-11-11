@@ -81,7 +81,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <input type="hidden" name="back" value={query(page)} />
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px]">
-              <thead className="border-b border-slate-200 bg-slate-50">
+              <thead className="border-b border-white/[0.07] bg-white/[0.02]">
                 <tr>
                   <th className="th w-8">
                     <CheckAll name="contactId" />
@@ -93,7 +93,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
                   <th className="th">Coordonnées</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/[0.06]">
                 {contacts.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50">
                     <td className="td">
@@ -119,7 +119,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
               </tbody>
             </table>
           </div>
-          <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3 border-t border-white/[0.07] bg-white/[0.02] px-4 py-3 text-sm">
             <span className="text-slate-600">Pour la sélection, rédiger par :</span>
             {CHANNELS.map((ch) => (
               <label key={ch} className="flex items-center gap-1.5">

@@ -1,43 +1,142 @@
 @import "tailwindcss";
 
+/*
+ * Theme « Sombre premium », d'apres la charte 365DayAgency (rose, violet, cyan sur fond nuit).
+ * Les palettes sont redefinies pour un fond sombre : les teintes claires (50-200) deviennent des
+ * voiles translucides, les teintes foncees (700-900) deviennent des textes clairs. Les pages gardent
+ * leurs classes habituelles (text-slate-500, bg-rose-50...) et s'affichent correctement en sombre.
+ */
 @theme {
-  --color-brand-50: #f3f1ff;
-  --color-brand-100: #e6e1ff;
-  --color-brand-500: #6d4aff;
-  --color-brand-600: #5a36ee;
-  --color-brand-700: #4a2bc9;
-  --color-ink: #14121f;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-night: #07060d;
+  --color-ink: #0d0b18;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-pink: #ff3d9a;
+  --color-violet: #8b5cff;
+  --color-cyan: #22e4ff;
+  --color-mint: #5ee0a0;
+
+  /* Gris : voiles pour les fonds et bordures, textes de plus en plus clairs */
+  --color-slate-50: rgba(255, 255, 255, 0.035);
+  --color-slate-100: rgba(255, 255, 255, 0.07);
+  --color-slate-200: rgba(255, 255, 255, 0.1);
+  --color-slate-300: rgba(255, 255, 255, 0.2);
+  --color-slate-400: #7d7799;
+  --color-slate-500: #a9a3c4;
+  --color-slate-600: #bdb7d6;
+  --color-slate-700: #d6d1ea;
+  --color-slate-800: #e8e4f6;
+  --color-slate-900: #f4f1ff;
+
+  --color-brand-50: rgba(139, 92, 255, 0.12);
+  --color-brand-100: rgba(139, 92, 255, 0.3);
+  --color-brand-500: #8b5cff;
+  --color-brand-600: #a98bff;
+  --color-brand-700: #c9b8ff;
+
+  --color-rose-50: rgba(255, 61, 154, 0.08);
+  --color-rose-100: rgba(255, 61, 154, 0.16);
+  --color-rose-200: rgba(255, 61, 154, 0.3);
+  --color-rose-500: #ff3d9a;
+  --color-rose-600: #ff5aa9;
+  --color-rose-700: #ff8cc3;
+  --color-rose-800: #ffb0d6;
+
+  --color-amber-50: rgba(255, 204, 77, 0.08);
+  --color-amber-100: rgba(255, 204, 77, 0.16);
+  --color-amber-200: rgba(255, 204, 77, 0.3);
+  --color-amber-500: #ffcc4d;
+  --color-amber-700: #ffd76e;
+  --color-amber-800: #ffe08f;
+  --color-amber-900: #ffe9b0;
+
+  --color-emerald-50: rgba(94, 224, 160, 0.07);
+  --color-emerald-100: rgba(94, 224, 160, 0.14);
+  --color-emerald-200: rgba(94, 224, 160, 0.26);
+  --color-emerald-500: #3fd18c;
+  --color-emerald-800: #8beebd;
+  --color-emerald-900: #b5f5d4;
+
+  --color-sky-100: rgba(34, 228, 255, 0.14);
+  --color-sky-800: #8ff1ff;
+  --color-violet-100: rgba(139, 92, 255, 0.18);
+  --color-violet-800: #cbb9ff;
+  --color-green-600: #22b573;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: #f6f6f9;
-  color: var(--color-ink);
+  background:
+    radial-gradient(1100px 600px at 90% -10%, rgba(59, 31, 122, 0.45), transparent),
+    radial-gradient(900px 500px at 0% 110%, rgba(14, 92, 122, 0.28), transparent),
+    var(--color-night);
+  background-attachment: fixed;
+  color: var(--color-slate-900);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: rgba(255, 61, 154, 0.35);
+}
+
+select option {
+  background: #15122a;
+  color: #f4f1ff;
 }
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet focus:bg-white/[0.06] focus:ring-4 focus:ring-violet/20;
+  }
+  .input:disabled {
+    @apply opacity-60;
   }
   .label {
-    @apply mb-1 block text-xs font-medium text-slate-600;
+    @apply mb-1.5 block text-xs font-medium text-slate-500;
   }
   .btn {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50;
+    background: linear-gradient(120deg, var(--color-pink), var(--color-violet));
+    box-shadow: 0 8px 28px -8px rgba(255, 61, 154, 0.55);
+  }
+  .btn:not(:disabled):hover {
+    filter: brightness(1.1);
+    box-shadow: 0 10px 34px -8px rgba(255, 61, 154, 0.75);
   }
   .btn-ghost {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-slate-800 transition hover:border-white/25 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-danger {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:opacity-60;
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-rose-100 disabled:opacity-50;
   }
   .card {
-    @apply rounded-xl border border-slate-200 bg-white;
+    @apply rounded-2xl border border-white/[0.09] bg-white/[0.04] backdrop-blur-xl;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 40px -24px rgba(0, 0, 0, 0.6);
   }
   .th {
-    @apply px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500;
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400;
   }
   .td {
-    @apply px-4 py-3 text-sm;
+    @apply px-4 py-3.5 text-sm;
+  }
+  .grad-text {
+    background: linear-gradient(120deg, var(--color-pink), var(--color-violet) 55%, var(--color-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .grad-bar {
+    background: linear-gradient(90deg, var(--color-pink), var(--color-violet), var(--color-cyan));
   }
 }

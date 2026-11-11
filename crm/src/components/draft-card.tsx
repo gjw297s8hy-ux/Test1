@@ -25,7 +25,7 @@ export async function DraftCard({
   return (
     <article className="card p-4">
       <header className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-        <span className="rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">{CHANNEL_LABEL[message.channel]}</span>
+        <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-medium text-white">{CHANNEL_LABEL[message.channel]}</span>
         {message.step > 1 && <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Relance {message.step - 1}</span>}
         {message.aiGenerated && <span className="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">Rédigé par l'agent</span>}
         {showContact && (

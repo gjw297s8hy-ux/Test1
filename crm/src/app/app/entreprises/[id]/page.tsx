@@ -74,11 +74,11 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           </section>
 
           <section className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Contacts</h2>
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Contacts</h2>
             {company.contacts.length === 0 ? (
               <p className="px-4 py-6 text-sm text-slate-500">Aucun contact. L'enrichissement en cherche ; vous pouvez aussi en ajouter depuis « Contacts ».</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-white/[0.06]">
                 {company.contacts.map((c) => (
                   <li key={c.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                     <div className="min-w-0 flex-1">

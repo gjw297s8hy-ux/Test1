@@ -6,7 +6,7 @@ import { fmtDate, fullName } from "@/lib/labels";
 export function TaskList({ tasks, showContact = true }: { tasks: (Task & { contact?: Contact | null })[]; showContact?: boolean }) {
   const now = Date.now();
   return (
-    <ul className="divide-y divide-slate-100">
+    <ul className="divide-y divide-white/[0.06]">
       {tasks.map((task) => {
         const late = !task.doneAt && task.dueAt && task.dueAt.getTime() < now;
         return (
@@ -17,7 +17,7 @@ export function TaskList({ tasks, showContact = true }: { tasks: (Task & { conta
                 type="submit"
                 aria-label={task.doneAt ? "Rouvrir la tâche" : "Terminer la tâche"}
                 className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border text-xs ${
-                  task.doneAt ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white hover:border-brand-500"
+                  task.doneAt ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-transparent hover:border-brand-500"
                 }`}
               >
                 {task.doneAt ? "✓" : ""}

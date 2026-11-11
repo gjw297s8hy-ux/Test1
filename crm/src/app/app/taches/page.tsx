@@ -43,7 +43,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
       <div className="space-y-6">
         {groups.map((g) => (
           <section key={g.title} className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">
               {g.title} <span className="font-normal text-slate-500">· {g.tasks.length}</span>
             </h2>
             <TaskList tasks={g.tasks} />
@@ -51,7 +51,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         ))}
         {done.length > 0 && (
           <section className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Terminées récemment</h2>
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Terminées récemment</h2>
             <TaskList tasks={done} />
           </section>
         )}

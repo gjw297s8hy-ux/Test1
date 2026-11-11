@@ -94,12 +94,12 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       </div>
 
       <section className="card mt-6">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Activité de l'agent</h2>
+        <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Activité de l'agent</h2>
         <RunList runs={runs} showCost={isSiteAdmin(ctx.userEmail)} />
       </section>
 
       <section className="card mt-6 overflow-hidden">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">
+        <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">
           Entreprises trouvées <span className="font-normal text-slate-500">· {companies.length}</span>
         </h2>
         {companies.length === 0 ? (
@@ -107,7 +107,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px]">
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/[0.06]">
                 {companies.map((c) => (
                   <tr key={c.id}>
                     <td className="td">
