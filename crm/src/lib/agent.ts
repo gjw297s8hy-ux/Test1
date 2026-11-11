@@ -20,7 +20,7 @@ const EXTRACT_SYSTEM = `Tu convertis des notes de recherche en données structur
 const WRITER_SYSTEM = `Tu rédiges des messages de prospection B2B en français pour un commercial, qui relira et validera chaque message avant envoi.
 
 Ce qui fait un bon message ici :
-- Il parle d'abord du destinataire : une accroche tirée d'un fait précis de sa fiche (activité, actualité, signal), puis le lien avec l'offre, puis une seule proposition simple (un court échange, une question).
+- Il parle d'abord du destinataire : une accroche tirée d'un fait précis de sa fiche (activité, actualité, signal), puis le lien avec l'offre, puis une question simple et concrète à laquelle on répond en une ligne (« Qui gère la communication de vos ouvertures ? », « Seriez-vous ouvert à un appel de 10 minutes jeudi ? »). Pas de formule de clôture creuse comme « Ravi d'échanger » ou « Au plaisir ».
 - Quand la fonction du prospect est « Adresse générale de l'entreprise », le message s'adresse à l'entreprise : « Bonjour, » sans nom de personne, et il demande en une phrase de transmettre à la personne concernée.
 - Il n'affirme que ce qui figure dans la fiche. Pas de chiffre, de client de référence ou de résultat inventé : un message faux engage la réputation de l'expéditeur.
 - Ton naturel, vouvoiement, phrases courtes, aucune formule creuse (« j'espère que vous allez bien », « je me permets de »), pas de majuscules ni de ponctuation insistantes.
@@ -262,7 +262,7 @@ export async function findProspects(orgId: string, campaignId: string, count: nu
   const [org, campaign, known] = await Promise.all([
     db.organization.findUniqueOrThrow({ where: { id: orgId } }),
     db.campaign.findFirstOrThrow({ where: { id: campaignId, orgId } }),
-    db.company.findMany({ where: { orgId }, select: { name: true, domain: true }, orderBy: { createdAt: "desc" }, take: 300 }),
+    db.company.findMany({ where: { orgId }, select: { name: true, domain: true, city: true }, orderBy: { createdAt: "desc" }, take: 300 }),
   ]);
 
   const notes = await research({
@@ -281,10 +281,10 @@ ${campaignBrief(campaign)}
 </cible>
 
 <deja_dans_le_crm>
-${known.map((k) => k.domain || k.name).join(", ") || "Aucune"}
+${known.map((k) => [k.name, k.domain, k.city].filter(Boolean).join(" · ")).join("\n") || "Aucune"}
 </deja_dans_le_crm>
 
-Ne propose pas les entreprises déjà dans le CRM. Privilégie des entreprises réelles et en activité dont tu as vu le site.
+Ces entreprises sont déjà dans le CRM : ne les propose pas, et ne dépense pas de recherche à les étudier. Avant de lire une page sur une entreprise, vérifie qu'elle n'est pas dans cette liste. Pour trouver des entreprises nouvelles, oriente tes recherches vers ce que la liste ne couvre pas encore : d'autres villes ou quartiers de la zone, des structures plus petites ou indépendantes, d'autres sous-secteurs. Privilégie des entreprises réelles et en activité dont tu as vu le site.
 
 Pour chaque entreprise, note : nom, site web, ville, secteur, taille, activité en une ou deux phrases, téléphone du standard, adresse e-mail générale publiée (contact@, partenariats@…), l'URL de la page source, et les faits récents utiles pour une accroche que tu as croisés (actualité, recrutement, ouverture), avec leur URL. Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible, justifié en deux phrases. Sois exigeant : 80 et plus seulement si l'entreprise correspond nettement et montre un signal de besoin.
 
@@ -439,14 +439,19 @@ export async function draftMessages(
     include: { company: { include: { campaign: true } }, messages: { orderBy: { createdAt: "asc" } } },
   });
   let drafts = 0;
-  let skipped = 0;
+  let optedOut = 0;
+  const noCoords: string[] = [];
   const failures: string[] = [];
 
   await pool(contacts, 4, async (contact) => {
     const camp = campaign ?? contact.company?.campaign ?? null;
     const wanted = usableChannels(contact, channels);
-    if (contact.doNotContact || wanted.length === 0) {
-      skipped++;
+    if (contact.doNotContact) {
+      optedOut++;
+      return;
+    }
+    if (wanted.length === 0) {
+      noCoords.push(fullName(contact));
       return;
     }
     const history = contact.messages.filter((m) => m.status === "SENT" || m.status === "RECEIVED");
@@ -523,7 +528,16 @@ ${history.length ? "\nPour la relance : apporte un élément nouveau ou un angle
 
   if (drafts === 0 && failures.length) throw new AgentError(failures[0]);
   const parts = [`${drafts} brouillon${drafts > 1 ? "s" : ""} à valider.`];
-  if (skipped) parts.push(`${skipped} contact${skipped > 1 ? "s" : ""} ignoré${skipped > 1 ? "s" : ""} (opposition ou coordonnées manquantes).`);
+  if (optedOut) parts.push(`${optedOut} contact${optedOut > 1 ? "s" : ""} ignoré${optedOut > 1 ? "s" : ""} : opposition à la prospection.`);
+  if (noCoords.length) {
+    const missing = [
+      channels.includes("EMAIL") && "adresse e-mail",
+      (channels.includes("SMS") || channels.includes("WHATSAPP")) && "téléphone",
+    ].filter(Boolean).join(" ni ");
+    const names = noCoords.slice(0, 3).join(", ") + (noCoords.length > 3 ? "…" : "");
+    const tip = channels.includes("LINKEDIN") ? "" : ` Ajoutez le canal LinkedIn pour ${noCoords.length > 1 ? "leur" : "lui"} écrire quand même.`;
+    parts.push(`${noCoords.length} contact${noCoords.length > 1 ? "s" : ""} sans ${missing || "coordonnées"} pour ces canaux (${names}).${tip}`);
+  }
   if (failures.length) parts.push(`${failures.length} en échec.`);
   return parts.join(" ");
 }

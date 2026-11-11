@@ -10,7 +10,18 @@ export function toE164(phone: string): string {
 }
 
 /** Lien qui ouvre l'application de l'utilisateur avec le message pre-rempli (envoi manuel). */
-export function manualLink(channel: Channel, c: { email: string; phone: string; linkedinUrl: string }, subject: string, body: string): string {
+/** Recherche LinkedIn de la personne, quand l'agent n'a pas trouve son profil. */
+export function linkedinSearchUrl(name: string, company: string): string {
+  const keywords = [name, company].filter(Boolean).join(" ").trim();
+  return keywords ? `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(keywords)}` : "";
+}
+
+export function manualLink(
+  channel: Channel,
+  c: { email: string; phone: string; linkedinUrl: string; name?: string; company?: string },
+  subject: string,
+  body: string,
+): string {
   switch (channel) {
     case "EMAIL":
       return c.email ? `mailto:${c.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}` : "";
@@ -19,6 +30,6 @@ export function manualLink(channel: Channel, c: { email: string; phone: string; 
     case "WHATSAPP":
       return c.phone ? `https://wa.me/${toE164(c.phone).replace("+", "")}?text=${encodeURIComponent(body)}` : "";
     case "LINKEDIN":
-      return c.linkedinUrl;
+      return /^https?:\/\//.test(c.linkedinUrl) ? c.linkedinUrl : linkedinSearchUrl(c.name ?? "", c.company ?? "");
   }
 }
