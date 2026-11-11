@@ -47,7 +47,7 @@ export async function DraftCard({
         channel={message.channel}
         subject={message.subject}
         body={message.body}
-        contact={{ email: contact.email, phone: contact.phone, linkedinUrl: contact.linkedinUrl }}
+        contact={{ email: contact.email, phone: contact.phone, linkedinUrl: contact.linkedinUrl, name: contact.jobTitle === "Adresse générale de l'entreprise" ? "" : fullName(contact), company: contact.company?.name ?? "" }}
         autoSend={autoSend}
         emailFooter={emailFooter(legalFooter, `${appUrl()}/desinscription/${contact.unsubscribeToken}`)}
         blocked={contact.doNotContact}

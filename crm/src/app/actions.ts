@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { Channel, ContactStatus, Role } from "@prisma/client";
 import { db } from "@/lib/db";
-import { createSession, destroySession, hashPassword, hashToken, isAdmin, newToken, requireCtx, verifyPassword } from "@/lib/auth";
+import { createSession, destroySession, hashPassword, hashToken, isAdmin, newToken, requireCtx, verifyPassword, verifyPasswordOrDummy } from "@/lib/auth";
+import { HOUR, MIN, clearAttempts, clientIp, recordAttempt, tooMany } from "@/lib/ratelimit";
 import { analyzeReply, draftMessages, enrichCompanies, findProspects, startRun } from "@/lib/agent";
 import { CHANNELS, CONTACT_STATUSES, domainOf, fullName } from "@/lib/labels";
 import { appUrl, canAutoSend, sendEmail, sendTwilio } from "@/lib/send";
@@ -32,7 +33,14 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   if (!name || !orgName) return { error: "Indiquez votre nom et celui de votre entreprise." };
   if (!emailOk(email)) return { error: "Adresse e-mail invalide." };
   if (password.length < 10) return { error: "Le mot de passe doit contenir au moins 10 caractères." };
+  // Freine la creation de comptes en serie (et donc d'essais gratuits) depuis une meme connexion.
+  const ip = await clientIp();
+  const ipKey = ip ? `signup:${ip}` : null;
+  if (await tooMany(ipKey, 3, 24 * HOUR)) {
+    return { error: "Trop de comptes créés depuis cette connexion aujourd'hui. Réessayez demain." };
+  }
   if (await db.user.findUnique({ where: { email } })) return { error: "Un compte existe déjà avec cette adresse." };
+  await recordAttempt(ipKey);
 
   const user = await db.user.create({
     data: {
@@ -50,11 +58,20 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
 export async function login(_: FormState, fd: FormData): Promise<FormState> {
   const email = s(fd, "email").toLowerCase();
   const password = String(fd.get("password") ?? "");
+  const emailKey = `login:${email}`;
+  const ip = await clientIp();
+  const ipKey = ip ? `login-ip:${ip}` : null;
+  // 5 erreurs par compte et 30 par connexion, sur 15 minutes : assez pour une faute de frappe, pas pour deviner.
+  if ((await tooMany(emailKey, 5, 15 * MIN)) || (await tooMany(ipKey, 30, 15 * MIN))) {
+    return { error: "Trop de tentatives. Patientez 15 minutes avant de réessayer." };
+  }
   const user = await db.user.findUnique({ where: { email }, include: { memberships: { orderBy: { id: "asc" } } } });
-  // Meme message dans les deux cas : ne revele pas si l'adresse a un compte.
-  if (!user || !(await verifyPassword(password, user.passwordHash)) || user.memberships.length === 0) {
+  // Meme message et meme duree dans tous les cas : ne revele pas si l'adresse a un compte.
+  if (!(await verifyPasswordOrDummy(password, user?.passwordHash)) || !user || user.memberships.length === 0) {
+    await recordAttempt(emailKey, ipKey);
     return { error: "Adresse e-mail ou mot de passe incorrect." };
   }
+  await clearAttempts(emailKey);
   await createSession(user.id, user.memberships[0].orgId);
   redirect("/app");
 }
@@ -83,7 +100,12 @@ export async function acceptInvitation(_: FormState, fd: FormData): Promise<Form
   const password = String(fd.get("password") ?? "");
   let user = await db.user.findUnique({ where: { email: invitation.email } });
   if (user) {
-    if (!(await verifyPassword(password, user.passwordHash))) return { error: "Mot de passe incorrect." };
+    const key = `login:${user.email}`;
+    if (await tooMany(key, 5, 15 * MIN)) return { error: "Trop de tentatives. Patientez 15 minutes avant de réessayer." };
+    if (!(await verifyPassword(password, user.passwordHash))) {
+      await recordAttempt(key);
+      return { error: "Mot de passe incorrect." };
+    }
   } else {
     const name = s(fd, "name");
     if (!name) return { error: "Indiquez votre nom." };

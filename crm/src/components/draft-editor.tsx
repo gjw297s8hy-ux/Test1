@@ -31,7 +31,7 @@ export function DraftEditor({
   channel: Channel;
   subject: string;
   body: string;
-  contact: { email: string; phone: string; linkedinUrl: string };
+  contact: { email: string; phone: string; linkedinUrl: string; name?: string; company?: string };
   /** Vrai si l'application peut envoyer elle-meme sur ce canal. */
   autoSend: boolean;
   emailFooter: string;
@@ -41,6 +41,7 @@ export function DraftEditor({
 }) {
   const [subject, setSubject] = useState(initialSubject);
   const [body, setBody] = useState(initialBody);
+  const [copied, setCopied] = useState(false);
   const full = channel === "EMAIL" ? body + emailFooter : body;
   const link = manualLink(channel, contact, subject, full);
   const limit = LIMIT[channel];
@@ -65,7 +66,11 @@ export function DraftEditor({
           {channel === "EMAIL"
             ? "Votre mention légale et le lien de désinscription sont ajoutés à l'envoi."
             : channel === "LINKEDIN"
-              ? "LinkedIn : envoi manuel depuis votre compte."
+              ? copied
+                ? "Texte copié : collez-le dans LinkedIn (Ctrl + V)."
+                : /^https?:\/\//.test(contact.linkedinUrl)
+                  ? "LinkedIn : le bouton ouvre son profil et copie le texte."
+                  : "Profil non trouvé : le bouton lance la recherche sur LinkedIn et copie le texte."
               : ""}
         </span>
         <span className={limit && body.length > limit ? "font-medium text-rose-600" : ""}>
@@ -84,8 +89,21 @@ export function DraftEditor({
           ) : (
             <>
               {link && (
-                <a className="btn" href={link} target="_blank" rel="noopener noreferrer">
-                  {OPEN_LABEL[channel]}
+                <a
+                  className="btn"
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  // LinkedIn ne permet pas de pre-remplir un message : on copie le texte pour qu'il suffise de le coller.
+                  onClick={() => {
+                    if (channel !== "LINKEDIN") return;
+                    navigator.clipboard?.writeText(full).then(
+                      () => setCopied(true),
+                      () => {},
+                    );
+                  }}
+                >
+                  {channel === "LINKEDIN" && !/^https?:\/\//.test(contact.linkedinUrl) ? "Chercher sur LinkedIn" : OPEN_LABEL[channel]}
                 </a>
               )}
               <CopyButton text={full} label="Copier le texte" />

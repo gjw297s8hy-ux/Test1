@@ -309,3 +309,12 @@ model Activity {
   @@index([contactId, createdAt])
   @@index([companyId, createdAt])
 }
+
+// Tentatives de connexion et d'inscription, pour limiter les essais en rafale.
+model Attempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
