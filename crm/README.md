@@ -31,6 +31,7 @@ Créez votre compte sur `/inscription`, décrivez votre offre dans **Paramètres
 | --- | --- |
 | `DATABASE_URL` | Base PostgreSQL. Obligatoire. |
 | `APP_URL` | Adresse publique du site : sert aux liens d'invitation et de désinscription. |
+| `ADMIN_EMAILS` | Vos adresses de connexion au CRM, séparées par des virgules. Ces espaces ont toujours accès à l'agent ; l'offre gratuite ne l'a pas. |
 | `ANTHROPIC_API_KEY` | Clé de l'agent IA ([console.anthropic.com](https://console.anthropic.com)). Sans elle, le CRM fonctionne mais l'agent est inactif. |
 | `ANTHROPIC_MODEL` | Modèle de l'agent (par défaut `claude-opus-5-5`). |
 | `SMTP_URL`, `SMTP_FROM` | Envoi direct des e-mails. Sans eux, l'e-mail s'ouvre pré-rempli dans votre messagerie. |

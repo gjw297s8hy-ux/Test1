@@ -4,8 +4,8 @@ import type { Channel, ContactStatus, RunType } from "@prisma/client";
 import { db } from "./db";
 import { CHANNEL_LABEL, domainOf, fullName } from "./labels";
 import { AgentError, agentConfigured, research, structured, type Usage } from "./llm";
+import { MONTHLY_RUNS, effectivePlan } from "./plan";
 
-const MONTHLY_RUNS = { FREE: 30, PRO: 1000 } as const;
 
 const RESEARCH_SYSTEM = `Tu es un assistant de prospection commerciale B2B pour une entreprise française. Tu recherches sur le web des entreprises et leurs interlocuteurs pour le compte d'un commercial, qui relira ton travail avant tout contact.
 
@@ -133,13 +133,16 @@ export async function startRun(opts: {
   if (!agentConfigured()) {
     return { ok: false, error: "L'agent IA n'est pas configuré : ajoutez ANTHROPIC_API_KEY dans les variables d'environnement." };
   }
-  const org = await db.organization.findUniqueOrThrow({ where: { id: opts.orgId } });
+  const plan = await effectivePlan(opts.orgId);
+  if (MONTHLY_RUNS[plan] === 0) {
+    return { ok: false, error: "L'agent IA est réservé aux abonnés. Votre offre gratuite donne accès au CRM sans l'agent." };
+  }
   const monthStart = new Date();
   monthStart.setUTCDate(1);
   monthStart.setUTCHours(0, 0, 0, 0);
   const used = await db.agentRun.count({ where: { orgId: opts.orgId, createdAt: { gte: monthStart } } });
-  if (used >= MONTHLY_RUNS[org.plan]) {
-    return { ok: false, error: `Quota mensuel de l'agent atteint (${MONTHLY_RUNS[org.plan]} lancements).` };
+  if (used >= MONTHLY_RUNS[plan]) {
+    return { ok: false, error: `Quota mensuel de l'agent atteint (${MONTHLY_RUNS[plan]} lancements).` };
   }
   const run = await db.agentRun.create({
     data: { orgId: opts.orgId, type: opts.type, label: opts.label, campaignId: opts.campaignId ?? null },
