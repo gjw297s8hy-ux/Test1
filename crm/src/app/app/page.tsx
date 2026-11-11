@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { closeStaleRuns } from "@/lib/agent";
 import { requireCtx } from "@/lib/auth";
+import { isSiteAdmin } from "@/lib/plan";
 import { db } from "@/lib/db";
 import { CHANNELS, CHANNEL_LABEL, CONTACT_STATUSES, STATUS_LABEL } from "@/lib/labels";
 import { AutoRefresh } from "@/components/client";
@@ -118,7 +119,7 @@ export default async function Dashboard() {
 
       <section className="card mt-6">
         <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Activité de l'agent</h2>
-        <RunList runs={runs} />
+        <RunList runs={runs} showCost={isSiteAdmin(ctx.userEmail)} />
       </section>
     </>
   );

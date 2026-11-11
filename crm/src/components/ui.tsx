@@ -47,7 +47,8 @@ export function Field({ label, children, className = "" }: { label: string; chil
   );
 }
 
-export function RunList({ runs }: { runs: AgentRun[] }) {
+/** showCost : reserve a l'administrateur du site. Les clients ne doivent pas voir le cout de revient. */
+export function RunList({ runs, showCost = false }: { runs: AgentRun[]; showCost?: boolean }) {
   if (runs.length === 0) return <p className="px-4 py-6 text-sm text-slate-500">L'agent n'a encore rien lancé.</p>;
   return (
     <ul className="divide-y divide-slate-100">
@@ -68,7 +69,7 @@ export function RunList({ runs }: { runs: AgentRun[] }) {
           </div>
           <span className="shrink-0 text-right text-xs text-slate-400">
             {fmtDateTime(run.createdAt)}
-            <CostLine run={run} />
+            {showCost && <CostLine run={run} />}
           </span>
         </li>
       ))}

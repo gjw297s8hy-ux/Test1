@@ -15,6 +15,11 @@ function adminEmails(): string[] {
     .filter(Boolean);
 }
 
+/** Administrateur du site (ADMIN_EMAILS) : seul a voir ce que coute l'agent. */
+export function isSiteAdmin(email: string): boolean {
+  return adminEmails().includes(email.trim().toLowerCase());
+}
+
 /** Offre reelle de l'organisation : celles des administrateurs du site (ADMIN_EMAILS) comptent comme Pro. */
 export async function effectivePlan(orgId: string): Promise<Plan> {
   const org = await db.organization.findUniqueOrThrow({ where: { id: orgId }, select: { plan: true } });

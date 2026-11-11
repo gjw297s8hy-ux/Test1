@@ -7,7 +7,7 @@ import { CHANNEL_LABEL } from "@/lib/labels";
 import { AutoRefresh, ConfirmSubmit, Submit } from "@/components/client";
 import { CampaignFields } from "@/components/campaign-fields";
 import { Notice, PageHeader, RunList, ScoreBadge, TextLink, TrialNotice } from "@/components/ui";
-import { isTrial } from "@/lib/plan";
+import { isTrial, isSiteAdmin } from "@/lib/plan";
 
 function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
   return (
@@ -95,7 +95,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
       <section className="card mt-6">
         <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Activité de l'agent</h2>
-        <RunList runs={runs} />
+        <RunList runs={runs} showCost={isSiteAdmin(ctx.userEmail)} />
       </section>
 
       <section className="card mt-6 overflow-hidden">
