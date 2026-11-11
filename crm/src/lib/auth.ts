@@ -17,6 +17,15 @@ export async function hashPassword(password: string): Promise<string> {
   return `${salt.toString("hex")}:${key.toString("hex")}`;
 }
 
+// Hachage factice : verifier un compte inexistant prend le meme temps qu'un vrai,
+// pour ne pas reveler quelles adresses ont un compte.
+const DUMMY_HASH = "00000000000000000000000000000000:" + "0".repeat(128);
+
+export async function verifyPasswordOrDummy(password: string, stored: string | undefined): Promise<boolean> {
+  const ok = await verifyPassword(password, stored ?? DUMMY_HASH);
+  return Boolean(stored) && ok;
+}
+
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const [saltHex, keyHex] = stored.split(":");
   if (!saltHex || !keyHex) return false;

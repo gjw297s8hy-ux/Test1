@@ -74,8 +74,15 @@ Vous restez responsable de votre prospection : tenez votre registre de traitemen
 
 Cloisonnement : toute requête est filtrée par l'`orgId` de la session. Une fiche d'une autre entreprise répond 404.
 
+## Sécurité
+
+- Mots de passe hachés (scrypt), sessions dans un cookie `httpOnly`, données cloisonnées par entreprise.
+- Connexion : 5 erreurs par compte et 30 par connexion sur 15 minutes, puis attente. Même message et même durée de réponse qu'une adresse ait un compte ou non.
+- Inscription : 3 comptes par connexion et par jour, pour freiner les essais gratuits en série.
+- En-têtes de sécurité sur toutes les pages : interdiction d'afficher le site dans un cadre, HTTPS forcé, etc.
+
 ## Ce qui n'est pas encore fait
 
 - Paiement et abonnements : l'offre (gratuite ou pro) existe en base avec son quota mensuel, sans Stripe.
 - Réception automatique des réponses : pour l'instant, on colle la réponse dans la fiche du contact.
-- Mot de passe oublié, limitation des tentatives de connexion.
+- Mot de passe oublié et vérification de l'adresse e-mail à l'inscription (il faut d'abord un service d'envoi d'e-mails).
