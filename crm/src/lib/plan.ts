@@ -1,8 +1,11 @@
-import type { Plan } from "@prisma/client";
+import type { Plan, RunType } from "@prisma/client";
 import { db } from "./db";
 
-/** Lancements de l'agent par mois. L'offre gratuite n'a pas acces a l'agent : chaque lancement coute du credit IA. */
-export const MONTHLY_RUNS: Record<Plan, number> = { FREE: 0, PRO: 1000 };
+/** Lancements de l'agent par mois pour les abonnes. */
+export const MONTHLY_RUNS = 1000;
+
+/** Offre gratuite : un seul essai par etape, sur un seul element, pour decouvrir l'agent. */
+export const TRIAL_SIZE = 1;
 
 function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS || "")
@@ -21,6 +24,16 @@ export async function effectivePlan(orgId: string): Promise<Plan> {
   return member ? "PRO" : org.plan;
 }
 
-export async function agentAllowed(orgId: string): Promise<boolean> {
-  return MONTHLY_RUNS[await effectivePlan(orgId)] > 0;
+/** Etapes de l'essai deja utilisees. Un lancement en echec ne compte pas : l'essai reste disponible. */
+export async function trialUsed(orgId: string): Promise<Set<RunType>> {
+  const runs = await db.agentRun.findMany({
+    where: { orgId, status: { in: ["RUNNING", "DONE"] } },
+    select: { type: true },
+    distinct: ["type"],
+  });
+  return new Set(runs.map((r) => r.type));
+}
+
+export async function isTrial(orgId: string): Promise<boolean> {
+  return (await effectivePlan(orgId)) === "FREE";
 }

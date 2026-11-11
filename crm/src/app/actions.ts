@@ -8,6 +8,7 @@ import { createSession, destroySession, hashPassword, hashToken, isAdmin, newTok
 import { analyzeReply, draftMessages, enrichCompanies, findProspects, startRun } from "@/lib/agent";
 import { CHANNELS, CONTACT_STATUSES, domainOf, fullName } from "@/lib/labels";
 import { appUrl, canAutoSend, sendEmail, sendTwilio } from "@/lib/send";
+import { TRIAL_SIZE, isTrial } from "@/lib/plan";
 
 export type FormState = { error?: string } | undefined;
 
@@ -328,11 +329,11 @@ export async function launchFind(fd: FormData) {
   const campaignId = s(fd, "campaignId");
   const campaign = await db.campaign.findFirst({ where: { id: campaignId, orgId: ctx.orgId } });
   if (!campaign) flash("/app/agent", "Campagne introuvable.");
-  const count = Math.max(3, Math.min(20, Number(s(fd, "count")) || 10));
+  const count = (await isTrial(ctx.orgId)) ? TRIAL_SIZE : Math.max(3, Math.min(20, Number(s(fd, "count")) || 10));
   const res = await startRun({
     orgId: ctx.orgId,
     type: "FIND",
-    label: `${count} prospects pour « ${campaign.name} »`,
+    label: `${count} prospect${count > 1 ? "s" : ""} pour « ${campaign.name} »`,
     campaignId,
     work: (usage) => findProspects(ctx.orgId, campaignId, count, usage),
   });
@@ -347,7 +348,7 @@ export async function launchEnrich(fd: FormData) {
   const companies = await db.company.findMany({
     where: { orgId: ctx.orgId, ...(ids.length ? { id: { in: ids } } : { campaignId: campaignId || "-", enrichedAt: null }) },
     select: { id: true, name: true },
-    take: 15,
+    take: (await isTrial(ctx.orgId)) ? TRIAL_SIZE : 15,
   });
   if (companies.length === 0) flash(back, "Aucune entreprise à enrichir.");
   const companyIds = companies.map((c) => c.id);
@@ -378,7 +379,7 @@ export async function launchDraft(fd: FormData) {
       ...(ids.length ? { id: { in: ids } } : { company: { campaignId: campaign?.id ?? "-" }, messages: { none: {} } }),
     },
     select: { id: true, firstName: true, lastName: true },
-    take: 25,
+    take: (await isTrial(ctx.orgId)) ? TRIAL_SIZE : 25,
   });
   if (contacts.length === 0) flash(back, "Aucun contact à traiter (déjà contactés, ou opposés à la prospection).");
   const contactIds = contacts.map((c) => c.id);

@@ -6,7 +6,8 @@ import { db } from "@/lib/db";
 import { CHANNEL_LABEL } from "@/lib/labels";
 import { AutoRefresh, ConfirmSubmit, Submit } from "@/components/client";
 import { CampaignFields } from "@/components/campaign-fields";
-import { Notice, PageHeader, RunList, ScoreBadge, TextLink } from "@/components/ui";
+import { Notice, PageHeader, RunList, ScoreBadge, TextLink, TrialNotice } from "@/components/ui";
+import { isTrial } from "@/lib/plan";
 
 function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
   return (
@@ -26,7 +27,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   await closeStaleRuns(ctx.orgId);
   const campaign = await db.campaign.findFirst({ where: { id, orgId: ctx.orgId } });
   if (!campaign) notFound();
-  const [companies, runs, toEnrich, toDraft, drafts] = await Promise.all([
+  const [companies, runs, toEnrich, toDraft, drafts, trial] = await Promise.all([
     db.company.findMany({
       where: { orgId: ctx.orgId, campaignId: id },
       include: { _count: { select: { contacts: true } } },
@@ -37,6 +38,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     db.company.count({ where: { orgId: ctx.orgId, campaignId: id, enrichedAt: null } }),
     db.contact.count({ where: { orgId: ctx.orgId, doNotContact: false, company: { campaignId: id }, messages: { none: {} } } }),
     db.message.count({ where: { orgId: ctx.orgId, campaignId: id, status: "DRAFT" } }),
+    isTrial(ctx.orgId),
   ]);
   const back = `/app/agent/${id}`;
 
@@ -45,16 +47,21 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       <AutoRefresh active={runs.some((r) => r.status === "RUNNING")} />
       <PageHeader title={campaign.name} subtitle={[campaign.industry, campaign.location, campaign.size].filter(Boolean).join(" · ")} />
       <Notice msg={msg} />
+      {trial && <TrialNotice />}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Step n={1} title="Trouver des prospects" hint="L'agent cherche sur le web des entreprises qui correspondent à la cible, avec leurs interlocuteurs et les pages sources.">
           <form action={launchFind} className="flex items-center gap-2">
             <input type="hidden" name="campaignId" value={id} />
-            <select className="input w-auto" name="count" defaultValue="10" aria-label="Nombre d'entreprises">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-            </select>
+            {trial ? (
+              <span className="text-sm text-slate-600">1 entreprise (essai)</span>
+            ) : (
+              <select className="input w-auto" name="count" defaultValue="10" aria-label="Nombre d'entreprises">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            )}
             <Submit pendingText="Lancement…">Chercher</Submit>
           </form>
         </Step>

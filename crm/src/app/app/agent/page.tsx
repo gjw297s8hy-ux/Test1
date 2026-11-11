@@ -4,31 +4,27 @@ import { closeStaleRuns } from "@/lib/agent";
 import { requireCtx } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { agentConfigured } from "@/lib/llm";
-import { agentAllowed } from "@/lib/plan";
+import { isTrial } from "@/lib/plan";
 import { AutoRefresh, Submit } from "@/components/client";
 import { CampaignFields } from "@/components/campaign-fields";
-import { Notice, PageHeader, RunList } from "@/components/ui";
+import { Notice, PageHeader, RunList, TrialNotice } from "@/components/ui";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
   const ctx = await requireCtx();
   const { msg } = await searchParams;
   await closeStaleRuns(ctx.orgId);
-  const [campaigns, runs, org, allowed] = await Promise.all([
+  const [campaigns, runs, org, trial] = await Promise.all([
     db.campaign.findMany({ where: { orgId: ctx.orgId }, include: { _count: { select: { companies: true, messages: true } } }, orderBy: { createdAt: "desc" } }),
     db.agentRun.findMany({ where: { orgId: ctx.orgId }, orderBy: { createdAt: "desc" }, take: 12 }),
     db.organization.findUniqueOrThrow({ where: { id: ctx.orgId } }),
-    agentAllowed(ctx.orgId),
+    isTrial(ctx.orgId),
   ]);
   return (
     <>
       <AutoRefresh active={runs.some((r) => r.status === "RUNNING")} />
       <PageHeader title="Agent IA" subtitle="Une campagne décrit une cible. L'agent cherche les entreprises sur le web, les qualifie et rédige les messages." />
       <Notice msg={msg} />
-      {!allowed && (
-        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
-          L'agent IA est réservé aux abonnés. Avec l'offre gratuite, vous pouvez préparer vos campagnes et utiliser tout le CRM, mais pas lancer l'agent.
-        </p>
-      )}
+      {trial && <TrialNotice />}
       {!agentConfigured() && (
         <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
           L'agent n'est pas encore branché : ajoutez la variable <code>ANTHROPIC_API_KEY</code> sur le serveur. Le reste du CRM fonctionne sans.
