@@ -49,7 +49,15 @@ enum MessageStatus {
   RECEIVED
 }
 
+enum CampaignGoal {
+  CLIENTS
+  SUBCONTRACTING
+  OUTLETS
+  PARTNERS
+}
+
 enum RunType {
+  IDEAS
   FIND
   ENRICH
   DRAFT
@@ -85,6 +93,7 @@ model Organization {
   messages    Message[]
   tasks       Task[]
   activities  Activity[]
+  ideas       Idea[]
 }
 
 model User {
@@ -205,6 +214,7 @@ model Campaign {
   id        String    @id @default(cuid())
   orgId     String
   name      String
+  goal      CampaignGoal @default(CLIENTS)
   // Cible (ICP)
   industry  String    @default("")
   location  String    @default("")
@@ -317,4 +327,27 @@ model Attempt {
   createdAt DateTime @default(now())
 
   @@index([key, createdAt])
+}
+
+// Piste de debouche proposee par l'agent, a transformer en campagne d'un clic.
+model Idea {
+  id        String       @id @default(cuid())
+  orgId     String
+  goal      CampaignGoal
+  title     String
+  why       String
+  industry  String       @default("")
+  location  String       @default("")
+  size      String       @default("")
+  roles     String       @default("")
+  keywords  String       @default("")
+  pitch     String       @default("")
+  // Rang propose par l'agent : 0 = la piste la plus prometteuse.
+  rank      Int          @default(0)
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
 }
