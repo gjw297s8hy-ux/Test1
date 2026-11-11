@@ -1,13 +1,14 @@
 import { after } from "next/server";
 import { z } from "zod";
-import type { Channel, ContactStatus, RunType } from "@prisma/client";
+import type { CampaignGoal, Channel, ContactStatus, RunType } from "@prisma/client";
 import { db } from "./db";
 import { CHANNEL_LABEL, domainOf, fullName } from "./labels";
 import { AgentError, agentConfigured, research, structured, type Usage } from "./llm";
 import { MONTHLY_RUNS, effectivePlan, trialUsed } from "./plan";
+import { GOALS, goalBrief } from "./goals";
 
 
-const RESEARCH_SYSTEM = `Tu es un assistant de prospection commerciale B2B pour une entreprise française. Tu recherches sur le web des entreprises et leurs interlocuteurs pour le compte d'un commercial, qui relira ton travail avant tout contact.
+const RESEARCH_SYSTEM = `Tu es un assistant de développement commercial pour une entreprise française : trouver des clients, des donneurs d'ordre, des points de vente ou des partenaires, selon l'objectif de la campagne. Tu recherches sur le web des entreprises et leurs interlocuteurs pour le compte d'un utilisateur, qui relira ton travail avant tout contact.
 
 Règles de travail :
 - Ne rapporte que ce que tu as lu sur une page web, et donne l'URL de la page pour chaque entreprise et chaque personne. Si une information est introuvable, écris « non trouvé » : une case vide vaut mieux qu'une supposition, car le commercial s'appuiera sur ces données pour écrire à de vraies personnes.
@@ -17,7 +18,7 @@ Règles de travail :
 
 const EXTRACT_SYSTEM = `Tu convertis des notes de recherche en données structurées pour un CRM. Reprends fidèlement les notes : n'ajoute aucune information qui n'y figure pas. Quand une information est absente, incertaine ou marquée « non trouvé », laisse le champ vide (""). Les champs ville, secteur et taille sont des valeurs courtes, sans commentaire : « Villejuif », « Transport léger de marchandises », « 10 à 19 salariés ».`;
 
-const WRITER_SYSTEM = `Tu rédiges des messages de prospection B2B en français pour un commercial, qui relira et validera chaque message avant envoi.
+const WRITER_SYSTEM = `Tu rédiges des messages de prise de contact B2B en français (prospection, proposition de sous-traitance, de référencement ou de partenariat, selon l'objectif de la campagne) pour un utilisateur, qui relira et validera chaque message avant envoi.
 
 Ce qui fait un bon message ici :
 - Il parle d'abord du destinataire : une accroche tirée d'un fait précis de sa fiche (activité, actualité, signal), puis le lien avec l'offre, puis une question simple et concrète à laquelle on répond en une ligne (« Qui gère la communication de vos ouvertures ? », « Seriez-vous ouvert à un appel de 10 minutes jeudi ? »). Pas de formule de clôture creuse comme « Ravi d'échanger » ou « Au plaisir ».
@@ -246,8 +247,9 @@ async function saveContacts(orgId: string, companyId: string, contacts: FoundCon
   return created;
 }
 
-function campaignBrief(c: { industry: string; location: string; size: string; roles: string; keywords: string }): string {
+function campaignBrief(c: { goal: CampaignGoal; industry: string; location: string; size: string; roles: string; keywords: string }): string {
   return [
+    goalBrief(c.goal),
     c.industry && `Secteur : ${c.industry}`,
     c.location && `Zone géographique : ${c.location}`,
     c.size && `Taille d'entreprise : ${c.size}`,
@@ -270,7 +272,7 @@ export async function findProspects(orgId: string, campaignId: string, count: nu
     // Chaque recherche ajoute des pages entieres a lire : c'est le premier poste de cout.
     maxSearches: Math.min(3 + count, 15),
     system: RESEARCH_SYSTEM,
-    prompt: `Trouve ${count} entreprises françaises qui correspondent à la cible ci-dessous, et pour chacune l'interlocuteur le plus pertinent.
+    prompt: `Trouve ${count} entreprises ou établissements français qui correspondent à la cible ci-dessous, et pour chacun l'interlocuteur le plus pertinent.
 
 <notre_offre>
 ${org.offer || campaign.pitch || "Non renseignée"}
@@ -286,9 +288,9 @@ ${known.map((k) => [k.name, k.domain, k.city].filter(Boolean).join(" · ")).join
 
 Ces entreprises sont déjà dans le CRM : ne les propose pas, et ne dépense pas de recherche à les étudier. Avant de lire une page sur une entreprise, vérifie qu'elle n'est pas dans cette liste. Pour trouver des entreprises nouvelles, oriente tes recherches vers ce que la liste ne couvre pas encore : d'autres villes ou quartiers de la zone, des structures plus petites ou indépendantes, d'autres sous-secteurs. Privilégie des entreprises réelles et en activité dont tu as vu le site.
 
-Pour chaque entreprise, note : nom, site web, ville, secteur, taille, activité en une ou deux phrases, téléphone du standard, adresse e-mail générale publiée (contact@, partenariats@…), l'URL de la page source, et les faits récents utiles pour une accroche que tu as croisés (actualité, recrutement, ouverture), avec leur URL. Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible, justifié en deux phrases. Sois exigeant : 80 et plus seulement si l'entreprise correspond nettement et montre un signal de besoin.
+Pour chaque entreprise, note : nom, site web, ville, secteur, taille, activité en une ou deux phrases, téléphone du standard, adresse e-mail générale publiée (contact@, partenariats@…), l'URL de la page source, et les faits récents utiles pour une accroche que tu as croisés (actualité, recrutement, ouverture), avec leur URL. Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible, justifié en deux phrases. Sois exigeant : 80 et plus seulement si ${GOALS[campaign.goal].score}.
 
-Économise tes recherches : une recherche qui renvoie une liste d'entreprises (annuaire, classement, article) vaut mieux que plusieurs recherches sur une seule. Puis, si tu les trouves, un ou deux interlocuteurs (${campaign.roles || "dirigeant ou responsable concerné"}) avec prénom, nom, fonction, e-mail professionnel, téléphone professionnel, URL du profil LinkedIn, et l'URL de la page où tu as trouvé ces informations.
+Économise tes recherches : une recherche qui renvoie une liste d'entreprises (annuaire, classement, article) vaut mieux que plusieurs recherches sur une seule. Puis, si tu les trouves, un ou deux interlocuteurs (${campaign.roles || GOALS[campaign.goal].roles}) avec prénom, nom, fonction, e-mail professionnel, téléphone professionnel, URL du profil LinkedIn, et l'URL de la page où tu as trouvé ces informations.
 
 Si tu trouves moins de ${count} entreprises solides, donne celles que tu as : la qualité compte plus que le nombre.`,
   });
@@ -361,7 +363,7 @@ export async function enrichCompanies(orgId: string, companyIds: string[], usage
         usage,
         maxSearches: 3,
         system: RESEARCH_SYSTEM,
-        prompt: `Renseigne-toi sur l'entreprise ci-dessous pour préparer une prise de contact commerciale.
+        prompt: `Renseigne-toi sur l'entreprise ci-dessous pour préparer une prise de contact.
 
 <entreprise>
 Nom : ${company.name}
@@ -377,9 +379,9 @@ ${org.offer || company.campaign?.pitch || "Non renseignée"}
 ${company.campaign ? campaignBrief(company.campaign) : "Non précisée : juge l'adéquation avec notre offre."}
 </cible_ideale>
 
-Note : son activité, son secteur, sa ville, sa taille, le téléphone du standard, l'adresse e-mail générale publiée (contact@, partenariats@…) ; de 3 à 5 faits récents ou signaux utiles pour une accroche (actualité, recrutement, ouverture, événement, nouveauté), chacun avec son URL ; les interlocuteurs pertinents (${company.campaign?.roles || "dirigeant ou responsable concerné"}) avec leurs coordonnées professionnelles publiées et l'URL source.
+Note : son activité, son secteur, sa ville, sa taille, le téléphone du standard, l'adresse e-mail générale publiée (contact@, partenariats@…) ; de 3 à 5 faits récents ou signaux utiles pour une accroche (actualité, recrutement, ouverture, événement, nouveauté), chacun avec son URL ; les interlocuteurs pertinents (${company.campaign?.roles || GOALS[company.campaign?.goal ?? "CLIENTS"].roles}) avec leurs coordonnées professionnelles publiées et l'URL source.
 
-Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible idéale, justifié en deux phrases. Sois exigeant : 80 et plus seulement si l'entreprise correspond nettement et montre un signal d'intérêt ou de besoin.`,
+Termine par un score d'adéquation de 0 à 100 avec notre offre et la cible idéale, justifié en deux phrases. Sois exigeant : 80 et plus seulement si ${GOALS[company.campaign?.goal ?? "CLIENTS"].score}.`,
       });
       const data = await structured({
         usage,
@@ -477,6 +479,7 @@ ${org.signature || org.senderName || org.name}
 </expediteur>
 
 <angle_de_campagne>
+${GOALS[camp?.goal ?? "CLIENTS"].label} : ${GOALS[camp?.goal ?? "CLIENTS"].message}
 ${camp?.pitch || "Aucun angle particulier : pars de l'offre."}
 Ton souhaité : ${camp?.tone || "professionnel et direct"}
 </angle_de_campagne>
@@ -633,4 +636,69 @@ ${inbound.body}
     });
   }
   return `${REPLY_LABEL[data.category]}. ${data.summary}`;
+}
+
+const IdeasSchema = z.object({
+  ideas: z.array(
+    z.object({
+      goal: z.enum(["CLIENTS", "SUBCONTRACTING", "OUTLETS", "PARTNERS"]),
+      title: z.string().describe("La piste en quelques mots : « Cafés et coffee shops sans production maison »"),
+      why: z.string().describe("Pourquoi c'est un bon débouché pour cette activité, en une phrase concrète"),
+      industry: z.string().describe("Secteur ou type d'établissement à chercher, court"),
+      size: z.string().describe("Taille visée, court ; vide si peu importe"),
+      roles: z.string().describe("Interlocuteur à viser"),
+      keywords: z.string().describe("Critères qui distinguent les bonnes cibles, court"),
+      pitch: z.string().describe("Angle du premier message pour cette piste, en une ou deux phrases"),
+    }),
+  ),
+});
+
+/** Propose des pistes de debouches a partir de la description de l'activite. Pas de recherche web : rapide et peu couteux. */
+export async function suggestIdeas(orgId: string, activity: string, location: string, usage: Usage): Promise<string> {
+  const known = await db.campaign.findMany({ where: { orgId }, select: { name: true, industry: true }, take: 50 });
+  const data = await structured({
+    usage,
+    effort: "medium",
+    schema: IdeasSchema,
+    system: `Tu es un conseiller en développement commercial pour les petites entreprises françaises (artisans, commerçants, indépendants, PME). À partir de la description d'une activité, tu proposes des débouchés concrets que l'entreprise peut prospecter dès cette semaine.
+
+Ce qui fait une bonne piste :
+- Elle désigne un type d'entreprise ou d'établissement précis, que l'on peut trouver sur le web et contacter (« épiceries fines et cavistes », pas « les commerçants »).
+- Elle relève d'un de ces objectifs : CLIENTS (vendre l'offre), SUBCONTRACTING (trouver des donneurs d'ordre qui sous-traitent), OUTLETS (trouver des lieux qui vendent ou servent nos produits), PARTNERS (monter un partenariat, une co-promotion, un sponsoring).
+- Elle est réaliste pour une petite structure, et sa raison d'être tient en une phrase concrète.
+- Mélange les objectifs quand l'activité s'y prête : les meilleures idées sont souvent celles auxquelles l'entreprise n'avait pas pensé.`,
+    prompt: `Propose 6 à 8 pistes de débouchés pour cette activité, de la plus prometteuse à la moins prometteuse.
+
+<activite>
+${activity}
+</activite>
+
+<zone>
+${location || "Non précisée : propose des pistes valables en France"}
+</zone>
+
+<campagnes_deja_lancees>
+${known.map((k) => `${k.name}${k.industry ? ` (${k.industry})` : ""}`).join("\n") || "Aucune"}
+</campagnes_deja_lancees>
+
+Ne repropose pas une piste déjà couverte par une campagne lancée.`,
+  });
+  const ideas = data.ideas.filter((i) => i.title.trim() && i.industry.trim()).slice(0, 8);
+  if (ideas.length === 0) throw new AgentError("L'agent n'a proposé aucune piste exploitable. Décrivez votre activité plus précisément.");
+  await db.idea.createMany({
+    data: ideas.map((i, rank) => ({
+      orgId,
+      rank,
+      goal: i.goal,
+      title: i.title.trim(),
+      why: i.why.trim(),
+      industry: i.industry.trim(),
+      location: location.trim(),
+      size: i.size.trim(),
+      roles: i.roles.trim(),
+      keywords: i.keywords.trim(),
+      pitch: i.pitch.trim(),
+    })),
+  });
+  return `${ideas.length} pistes de débouchés proposées.`;
 }

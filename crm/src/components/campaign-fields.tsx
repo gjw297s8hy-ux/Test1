@@ -1,15 +1,33 @@
 import type { Campaign } from "@prisma/client";
 import { CHANNELS, CHANNEL_LABEL } from "@/lib/labels";
+import { GOALS, GOAL_LIST } from "@/lib/goals";
 
 export function CampaignFields({ campaign }: { campaign?: Campaign }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
+      <fieldset className="sm:col-span-2">
+        <legend className="label">Objectif</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {GOAL_LIST.map((g) => (
+            <label
+              key={g}
+              className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-white/25 has-[:checked]:border-violet has-[:checked]:bg-violet/15"
+            >
+              <input type="radio" name="goal" value={g} defaultChecked={(campaign?.goal ?? "CLIENTS") === g} className="mt-1 accent-violet" />
+              <span>
+                <span className="block text-sm font-semibold">{GOALS[g].label}</span>
+                <span className="block text-xs text-slate-500">{GOALS[g].example}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <label className="sm:col-span-2">
         <span className="label">Nom de la campagne</span>
-        <input className="input" name="name" defaultValue={campaign?.name} placeholder="Salles de sport indépendantes, Lyon" required />
+        <input className="input" name="name" defaultValue={campaign?.name} placeholder="Cafés indépendants, Lyon" required />
       </label>
       <label>
-        <span className="label">Secteur visé</span>
+        <span className="label">Type d'entreprise ou d'établissement visé</span>
         <input className="input" name="industry" defaultValue={campaign?.industry} placeholder="Salles de sport, clubs de fitness" />
       </label>
       <label>

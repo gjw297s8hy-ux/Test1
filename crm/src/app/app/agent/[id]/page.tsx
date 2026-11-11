@@ -4,6 +4,7 @@ import { closeStaleRuns } from "@/lib/agent";
 import { requireCtx } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { CHANNEL_LABEL } from "@/lib/labels";
+import { GOALS } from "@/lib/goals";
 import { AutoRefresh, ConfirmSubmit, Submit } from "@/components/client";
 import { CampaignFields } from "@/components/campaign-fields";
 import { Notice, PageHeader, RunList, ScoreBadge, TextLink, TrialNotice } from "@/components/ui";
@@ -45,12 +46,12 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   return (
     <>
       <AutoRefresh active={runs.some((r) => r.status === "RUNNING")} />
-      <PageHeader title={campaign.name} subtitle={[campaign.industry, campaign.location, campaign.size].filter(Boolean).join(" · ")} />
+      <PageHeader title={campaign.name} subtitle={[GOALS[campaign.goal].label, campaign.industry, campaign.location, campaign.size].filter(Boolean).join(" · ")} />
       <Notice msg={msg} />
       {trial && <TrialNotice />}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Step n={1} title="Trouver des prospects" hint="L'agent cherche sur le web des entreprises qui correspondent à la cible, avec leurs interlocuteurs et les pages sources.">
+        <Step n={1} title="Trouver des prospects" hint={`L'agent cherche sur le web ${GOALS[campaign.goal].find.split(":")[0]}, avec leurs interlocuteurs et les pages sources.`}>
           <form action={launchFind} className="flex items-center gap-2">
             <input type="hidden" name="campaignId" value={id} />
             {trial ? (

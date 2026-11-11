@@ -6,7 +6,8 @@ import type { Channel, ContactStatus, Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { createSession, destroySession, hashPassword, hashToken, isAdmin, newToken, requireCtx, verifyPassword, verifyPasswordOrDummy } from "@/lib/auth";
 import { HOUR, MIN, clearAttempts, clientIp, recordAttempt, tooMany } from "@/lib/ratelimit";
-import { analyzeReply, draftMessages, enrichCompanies, findProspects, startRun } from "@/lib/agent";
+import { analyzeReply, draftMessages, enrichCompanies, findProspects, startRun, suggestIdeas } from "@/lib/agent";
+import { GOAL_LIST } from "@/lib/goals";
 import { CHANNELS, CONTACT_STATUSES, domainOf, fullName } from "@/lib/labels";
 import { appUrl, canAutoSend, sendEmail, sendTwilio } from "@/lib/send";
 import { TRIAL_SIZE, isTrial } from "@/lib/plan";
@@ -308,9 +309,11 @@ export async function deleteTask(fd: FormData) {
 /* ---------- Campagnes et agent ---------- */
 
 function campaignData(fd: FormData) {
+  const goal = GOAL_LIST.find((g) => g === s(fd, "goal")) ?? "CLIENTS";
   const channels = fd.getAll("channels").map(String).filter((c): c is Channel => CHANNELS.includes(c as Channel));
   return {
     name: s(fd, "name"),
+    goal,
     industry: s(fd, "industry"),
     location: s(fd, "location"),
     size: s(fd, "size"),
@@ -541,4 +544,50 @@ export async function registerReply(fd: FormData) {
     work: (usage) => analyzeReply(ctx.orgId, inbound.id, usage),
   });
   flash(back, res.ok ? "Réponse enregistrée. L'agent l'analyse et prépare la suite." : `Réponse enregistrée. ${res.error}`);
+}
+
+/* ---------- Idees de debouches ---------- */
+
+export async function launchIdeas(fd: FormData) {
+  const ctx = await requireCtx();
+  const activity = s(fd, "activity").slice(0, 2000);
+  if (activity.length < 15) flash("/app/agent", "Décrivez votre activité en une ou deux phrases pour que l'agent propose des pistes.");
+  const location = s(fd, "location").slice(0, 200);
+  // Premiere description de l'activite : elle devient l'offre, qui guide ensuite les recherches et les messages.
+  await db.organization.updateMany({ where: { id: ctx.orgId, offer: "" }, data: { offer: activity } });
+  const res = await startRun({
+    orgId: ctx.orgId,
+    type: "IDEAS",
+    label: activity.length > 60 ? `${activity.slice(0, 57)}…` : activity,
+    work: (usage) => suggestIdeas(ctx.orgId, activity, location, usage),
+  });
+  flash("/app/agent", res.ok ? "L'agent cherche des idées de débouchés. Elles apparaîtront ici dans un instant." : res.error);
+}
+
+export async function createCampaignFromIdea(fd: FormData) {
+  const ctx = await requireCtx();
+  const idea = await db.idea.findFirst({ where: { id: s(fd, "id"), orgId: ctx.orgId } });
+  if (!idea) flash("/app/agent", "Cette idée n'existe plus.");
+  const campaign = await db.campaign.create({
+    data: {
+      orgId: ctx.orgId,
+      name: idea.title,
+      goal: idea.goal,
+      industry: idea.industry,
+      location: idea.location,
+      size: idea.size,
+      roles: idea.roles,
+      keywords: idea.keywords,
+      pitch: idea.pitch,
+      channels: ["EMAIL", "LINKEDIN"],
+    },
+  });
+  await db.idea.update({ where: { id: idea.id }, data: { usedAt: new Date() } });
+  redirect(`/app/agent/${campaign.id}?msg=${encodeURIComponent("Campagne créée à partir de l'idée. Vérifiez la cible, puis lancez la recherche.")}`);
+}
+
+export async function discardIdea(fd: FormData) {
+  const ctx = await requireCtx();
+  await db.idea.deleteMany({ where: { id: s(fd, "id"), orgId: ctx.orgId } });
+  revalidatePath("/app/agent");
 }

@@ -38,6 +38,7 @@ export const MESSAGE_STATUS_LABEL: Record<MessageStatus, string> = {
 };
 
 export const RUN_LABEL: Record<RunType, string> = {
+  IDEAS: "Idées de débouchés",
   FIND: "Recherche de prospects",
   ENRICH: "Approfondissement",
   DRAFT: "Rédaction",
