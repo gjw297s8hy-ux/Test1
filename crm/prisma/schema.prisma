@@ -236,6 +236,7 @@ model AgentRun {
   error        String    @default("")
   inputTokens  Int       @default(0)
   outputTokens Int       @default(0)
+  webSearches  Int       @default(0)
   createdAt    DateTime  @default(now())
   finishedAt   DateTime?
 

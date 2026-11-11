@@ -8,7 +8,22 @@ const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
 export class AgentError extends Error {}
 
-export type Usage = { input: number; output: number };
+export type Usage = { input: number; output: number; searches: number };
+
+/** Tarifs publics en dollars : par million de jetons, et par recherche web (10 $ les 1 000). */
+const PRICES: Record<string, { input: number; output: number }> = {
+  "claude-opus-5-5": { input: 4, output: 20 },
+  "claude-sonnet-5-5": { input: 2, output: 10 },
+  "claude-haiku-5-5": { input: 0.1, output: 0.5 },
+};
+const SEARCH_PRICE = 0.01;
+
+/** Cout estime d'un lancement, ou null si le modele n'a pas de tarif connu ici. */
+export function estimateCostUsd(u: { inputTokens: number; outputTokens: number; webSearches: number }): number | null {
+  const price = PRICES[MODEL];
+  if (!price) return null;
+  return (u.inputTokens * price.input + u.outputTokens * price.output) / 1e6 + u.webSearches * SEARCH_PRICE;
+}
 
 let client: Anthropic | null = null;
 
@@ -24,9 +39,13 @@ function getClient(): Anthropic {
   return client;
 }
 
-function track(usage: Usage, u: { input_tokens: number; output_tokens: number }) {
-  usage.input += u.input_tokens;
+function track(
+  usage: Usage,
+  u: { input_tokens: number; output_tokens: number; cache_read_input_tokens?: number | null; cache_creation_input_tokens?: number | null; server_tool_use?: { web_search_requests: number } | null },
+) {
+  usage.input += u.input_tokens + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0);
   usage.output += u.output_tokens;
+  usage.searches += u.server_tool_use?.web_search_requests ?? 0;
 }
 
 function translate(err: unknown): never {
@@ -92,6 +111,8 @@ export async function structured<S extends z.ZodType>(opts: {
   system: string;
   prompt: string;
   usage: Usage;
+  /** Extraction simple : "low" suffit et coute moins. Redaction : "medium". */
+  effort?: "low" | "medium";
 }): Promise<z.infer<S>> {
   const anthropic = getClient();
   try {
@@ -101,7 +122,7 @@ export async function structured<S extends z.ZodType>(opts: {
       betas: [FALLBACK_BETA],
       fallbacks: "default",
       system: opts.system,
-      output_config: { effort: "medium", format: betaZodOutputFormat(opts.schema) },
+      output_config: { effort: opts.effort ?? "low", format: betaZodOutputFormat(opts.schema) },
       messages: [{ role: "user", content: opts.prompt }],
     });
     track(opts.usage, message.usage);

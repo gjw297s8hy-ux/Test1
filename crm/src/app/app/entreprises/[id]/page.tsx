@@ -45,7 +45,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         <form action={launchEnrich}>
           <input type="hidden" name="companyId" value={company.id} />
           <input type="hidden" name="back" value={back} />
-          <Submit pendingText="Lancement…">{company.enrichedAt ? "Relancer l'enrichissement" : "Enrichir et scorer avec l'agent"}</Submit>
+          <Submit pendingText="Lancement…">{company.enrichedAt ? "Approfondir à nouveau" : "Approfondir avec l'agent"}</Submit>
         </form>
       </PageHeader>
       <Notice msg={msg} />

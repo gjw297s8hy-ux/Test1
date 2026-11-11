@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AgentRun, ContactStatus } from "@prisma/client";
 import { RUN_LABEL, STATUS_LABEL, STATUS_TONE, fmtDateTime } from "@/lib/labels";
+import { estimateCostUsd } from "@/lib/llm";
 
 export function PageHeader({ title, subtitle, children }: { title: string; subtitle?: string; children?: React.ReactNode }) {
   return (
@@ -65,7 +66,10 @@ export function RunList({ runs }: { runs: AgentRun[] }) {
               {run.status === "RUNNING" ? "En cours…" : run.status === "DONE" ? run.summary : run.error}
             </p>
           </div>
-          <span className="shrink-0 text-xs text-slate-400">{fmtDateTime(run.createdAt)}</span>
+          <span className="shrink-0 text-right text-xs text-slate-400">
+            {fmtDateTime(run.createdAt)}
+            <CostLine run={run} />
+          </span>
         </li>
       ))}
     </ul>
@@ -94,5 +98,19 @@ export function TrialNotice() {
     <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
       Essai gratuit : vous pouvez lancer chaque étape une fois, sur une seule entreprise et un seul contact, pour voir comment l'agent travaille. Abonnez-vous pour prospecter sans limite.
     </p>
+  );
+}
+
+const usd = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** Cout estime d'un lancement termine, d'apres les jetons et les recherches web comptes par l'API. */
+function CostLine({ run }: { run: AgentRun }) {
+  if (run.status === "RUNNING") return null;
+  const cost = estimateCostUsd(run);
+  if (cost == null || cost === 0) return null;
+  return (
+    <span className="block tabular-nums" title={`${run.inputTokens} jetons lus, ${run.outputTokens} écrits, ${run.webSearches} recherches web`}>
+      ≈ {usd.format(cost)}
+    </span>
   );
 }

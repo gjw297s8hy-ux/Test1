@@ -1,4 +1,5 @@
 import type { Plan, RunType } from "@prisma/client";
+import { cache } from "react";
 import { db } from "./db";
 
 /** Lancements de l'agent par mois pour les abonnes. */
@@ -34,6 +35,4 @@ export async function trialUsed(orgId: string): Promise<Set<RunType>> {
   return new Set(runs.map((r) => r.type));
 }
 
-export async function isTrial(orgId: string): Promise<boolean> {
-  return (await effectivePlan(orgId)) === "FREE";
-}
+export const isTrial = cache(async (orgId: string): Promise<boolean> => (await effectivePlan(orgId)) === "FREE");

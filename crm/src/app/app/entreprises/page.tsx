@@ -97,7 +97,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           </div>
           <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm">
             <span className="text-slate-600">Pour la sélection (15 au plus par lancement) :</span>
-            <Submit pendingText="Lancement…">Enrichir et scorer avec l'agent</Submit>
+            <Submit pendingText="Lancement…">Approfondir avec l'agent</Submit>
           </div>
         </form>
       )}

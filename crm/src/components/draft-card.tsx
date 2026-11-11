@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { Company, Contact, Message } from "@prisma/client";
 import { CHANNEL_LABEL, fullName } from "@/lib/labels";
 import { appUrl, canAutoSend, emailFooter } from "@/lib/send";
+import { isTrial } from "@/lib/plan";
 import { DraftEditor } from "./draft-editor";
 
-export function DraftCard({
+export async function DraftCard({
   message,
   contact,
   legalFooter,
@@ -17,6 +18,8 @@ export function DraftCard({
   back: string;
   showContact?: boolean;
 }) {
+  // Offre gratuite : jamais d'envoi par le serveur de l'application, seulement depuis la messagerie de l'utilisateur.
+  const autoSend = canAutoSend(message.channel) && !(await isTrial(message.orgId));
   const missing =
     message.channel === "EMAIL" ? !contact.email : message.channel === "SMS" || message.channel === "WHATSAPP" ? !contact.phone : false;
   return (
@@ -45,7 +48,7 @@ export function DraftCard({
         subject={message.subject}
         body={message.body}
         contact={{ email: contact.email, phone: contact.phone, linkedinUrl: contact.linkedinUrl }}
-        autoSend={canAutoSend(message.channel)}
+        autoSend={autoSend}
         emailFooter={emailFooter(legalFooter, `${appUrl()}/desinscription/${contact.unsubscribeToken}`)}
         blocked={contact.doNotContact}
         error={message.error}

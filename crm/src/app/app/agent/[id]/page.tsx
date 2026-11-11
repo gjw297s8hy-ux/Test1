@@ -65,12 +65,16 @@ export default async function Page({ params, searchParams }: { params: Promise<{
             <Submit pendingText="Lancement…">Chercher</Submit>
           </form>
         </Step>
-        <Step n={2} title="Enrichir et scorer" hint={`${toEnrich} entreprise${toEnrich > 1 ? "s" : ""} à analyser : activité, actualités, interlocuteurs, score de 0 à 100. Jusqu'à 15 par lancement.`}>
+        <Step
+          n={2}
+          title="Approfondir (facultatif)"
+          hint={`La recherche donne déjà un score. Approfondir cherche les actualités récentes et d'autres interlocuteurs : utile pour vos meilleures cibles. ${toEnrich} entreprise${toEnrich > 1 ? "s" : ""} non approfondie${toEnrich > 1 ? "s" : ""}.`}
+        >
           <form action={launchEnrich}>
             <input type="hidden" name="campaignId" value={id} />
             <input type="hidden" name="back" value={back} />
             <Submit pendingText="Lancement…" disabled={toEnrich === 0}>
-              Enrichir
+              Approfondir
             </Submit>
           </form>
         </Step>
