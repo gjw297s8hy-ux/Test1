@@ -40,7 +40,15 @@ LinkedIn est toujours manuel : l'application ouvre le profil et copie le texte, 
 
 ## Mise en ligne
 
-Le plus simple : [Vercel](https://vercel.com) (dossier racine `crm`) et une base Neon ou Supabase. Renseignez les variables ci-dessus, et lancez `npm run db:deploy` à chaque mise à jour du schéma. Une recherche de l'agent dure quelques minutes : prévoyez une durée de fonction d'au moins 300 secondes.
+Le plus simple, sans rien installer sur votre ordinateur : [Vercel](https://vercel.com).
+
+1. Sur Vercel, **Add New → Project**, puis importez ce dépôt GitHub.
+2. Dans **Root Directory**, choisissez `crm`.
+3. Dans l'onglet **Storage** du projet, ajoutez une base **Neon** (Postgres) : Vercel renseigne `DATABASE_URL` tout seul.
+4. Dans **Settings → Environment Variables**, ajoutez `ANTHROPIC_API_KEY` et `APP_URL` (l'adresse de votre site, par exemple `https://crm.votredomaine.fr`).
+5. Lancez le déploiement. Les tables sont créées automatiquement à chaque mise en ligne.
+
+Une recherche de l'agent dure quelques minutes : dans **Settings → Functions**, réglez la durée maximale sur 300 secondes.
 
 ## RGPD
 
