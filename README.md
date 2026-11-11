@@ -35,3 +35,7 @@ Netlify ou Vercel fonctionnent aussi : glissez-déposez le dossier, rien à conf
 - Le nom « 365DayAgency » apparaît dans `index.html` et `commande.html` (logo, titre, pied de page).
 - Les réalisations (soirées et clubs, vidéos salle de sport) utilisent des visuels de démonstration : remplacez les blocs `.thumb` par vos images.
 - Les flyers qui flottent dans la scène 3D se changent dans `js/scene.js` (liste `posters`).
+
+## CRM de prospection
+
+Le dossier `crm/` contient une application séparée : un CRM avec agent de prospection IA (Next.js + PostgreSQL). Elle ne fait pas partie du site vitrine et se déploie à part : voir `crm/README.md`.
