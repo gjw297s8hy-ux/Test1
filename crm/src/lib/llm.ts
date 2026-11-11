@@ -34,6 +34,9 @@ function translate(err: unknown): never {
   if (err instanceof Anthropic.AuthenticationError) throw new AgentError("Clé API Anthropic refusée. Vérifiez ANTHROPIC_API_KEY.");
   if (err instanceof Anthropic.RateLimitError) throw new AgentError("Limite de débit de l'API atteinte. Réessayez dans une minute.");
   if (err instanceof Anthropic.APIConnectionError) throw new AgentError("Impossible de joindre l'API Anthropic (réseau).");
+  if (err instanceof Anthropic.APIError && /credit balance/i.test(err.message)) {
+    throw new AgentError("Crédit IA épuisé : rechargez le compte Anthropic (console, Billing) puis relancez.");
+  }
   if (err instanceof Anthropic.APIError) throw new AgentError(`Erreur de l'API Anthropic (${err.status ?? "?"}) : ${err.message}`);
   throw err;
 }

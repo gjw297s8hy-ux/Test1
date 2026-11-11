@@ -3,6 +3,7 @@ import { isAdmin, requireCtx } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { fmtDate } from "@/lib/labels";
 import { agentConfigured } from "@/lib/llm";
+import { effectivePlan } from "@/lib/plan";
 import { smtpConfigured, twilioConfigured } from "@/lib/send";
 import { ConfirmSubmit, CopyButton, Submit } from "@/components/client";
 import { Notice, PageHeader } from "@/components/ui";
@@ -25,11 +26,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
   const ctx = await requireCtx();
   const sp = await searchParams;
   const admin = isAdmin(ctx);
-  const [org, members, invitations, otherOrgs] = await Promise.all([
+  const [org, members, invitations, otherOrgs, plan] = await Promise.all([
     db.organization.findUniqueOrThrow({ where: { id: ctx.orgId } }),
     db.membership.findMany({ where: { orgId: ctx.orgId }, include: { user: true }, orderBy: { id: "asc" } }),
     db.invitation.findMany({ where: { orgId: ctx.orgId, acceptedAt: null, expiresAt: { gt: new Date() } }, orderBy: { createdAt: "desc" } }),
     db.membership.findMany({ where: { userId: ctx.userId, orgId: { not: ctx.orgId } }, include: { org: true } }),
+    effectivePlan(ctx.orgId),
   ]);
 
   return (
@@ -101,7 +103,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <section className="card p-4 text-sm">
             <h2 className="text-sm font-semibold">Offre</h2>
             <p className="mt-1 text-slate-600">
-              {org.plan === "PRO" ? "Pro : 1 000 lancements de l'agent par mois." : "Gratuite : 30 lancements de l'agent par mois."}
+              {plan === "PRO" ? "Pro : 1 000 lancements de l'agent par mois." : "Gratuite : le CRM complet, sans l'agent IA."}
             </p>
           </section>
         </div>
