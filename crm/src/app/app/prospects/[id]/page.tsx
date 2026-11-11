@@ -94,11 +94,11 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           </section>
 
           <section className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Échanges</h2>
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Échanges</h2>
             {history.length === 0 ? (
               <p className="px-4 py-6 text-sm text-slate-500">Aucun échange pour l'instant.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-white/[0.06]">
                 {history.map((m) => (
                   <li key={m.id} className={`px-4 py-3 text-sm ${m.direction === "INBOUND" ? "bg-emerald-50/50" : ""}`}>
                     <p className="mb-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -122,7 +122,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           </section>
 
           <section className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Tâches</h2>
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Tâches</h2>
             {contact.tasks.length > 0 && <TaskList tasks={contact.tasks} showContact={false} />}
             <form action={createTask} className="flex flex-wrap items-end gap-3 border-t border-slate-100 p-4">
               <input type="hidden" name="contactId" value={contact.id} />
@@ -202,8 +202,8 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           </section>
 
           <section className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Historique</h2>
-            <ul className="divide-y divide-slate-100">
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Historique</h2>
+            <ul className="divide-y divide-white/[0.06]">
               {contact.activities.map((a) => (
                 <li key={a.id} className="px-4 py-2.5 text-sm">
                   <p className="text-slate-700">{a.summary}</p>

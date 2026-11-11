@@ -7,7 +7,7 @@ import { CHANNEL_LABEL } from "@/lib/labels";
 import { AutoRefresh, ConfirmSubmit, Submit } from "@/components/client";
 import { CampaignFields } from "@/components/campaign-fields";
 import { Notice, PageHeader, RunList, ScoreBadge, TextLink, TrialNotice } from "@/components/ui";
-import { isTrial } from "@/lib/plan";
+import { isTrial, isSiteAdmin } from "@/lib/plan";
 
 function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
   return (
@@ -65,12 +65,16 @@ export default async function Page({ params, searchParams }: { params: Promise<{
             <Submit pendingText="Lancement…">Chercher</Submit>
           </form>
         </Step>
-        <Step n={2} title="Enrichir et scorer" hint={`${toEnrich} entreprise${toEnrich > 1 ? "s" : ""} à analyser : activité, actualités, interlocuteurs, score de 0 à 100. Jusqu'à 15 par lancement.`}>
+        <Step
+          n={2}
+          title="Approfondir (facultatif)"
+          hint={`La recherche donne déjà un score. Approfondir cherche les actualités récentes et d'autres interlocuteurs : utile pour vos meilleures cibles. ${toEnrich} entreprise${toEnrich > 1 ? "s" : ""} non approfondie${toEnrich > 1 ? "s" : ""}.`}
+        >
           <form action={launchEnrich}>
             <input type="hidden" name="campaignId" value={id} />
             <input type="hidden" name="back" value={back} />
             <Submit pendingText="Lancement…" disabled={toEnrich === 0}>
-              Enrichir
+              Approfondir
             </Submit>
           </form>
         </Step>
@@ -90,12 +94,12 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       </div>
 
       <section className="card mt-6">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Activité de l'agent</h2>
-        <RunList runs={runs} />
+        <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Activité de l'agent</h2>
+        <RunList runs={runs} showCost={isSiteAdmin(ctx.userEmail)} />
       </section>
 
       <section className="card mt-6 overflow-hidden">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">
+        <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">
           Entreprises trouvées <span className="font-normal text-slate-500">· {companies.length}</span>
         </h2>
         {companies.length === 0 ? (
@@ -103,7 +107,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px]">
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/[0.06]">
                 {companies.map((c) => (
                   <tr key={c.id}>
                     <td className="td">

@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <Link
             key={c ?? "tous"}
             href={c ? `/app/messages?canal=${c}` : "/app/messages"}
-            className={`rounded-full border px-3 py-1 ${c === channel ? "border-brand-500 bg-brand-500 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}
+            className={`rounded-full border px-3 py-1 ${c === channel ? "border-transparent bg-gradient-to-r from-pink to-violet text-white" : "border-white/12 bg-white/[0.04] text-slate-700 hover:bg-white/[0.08]"}`}
           >
             {c ? CHANNEL_LABEL[c] : "Tous"}
           </Link>

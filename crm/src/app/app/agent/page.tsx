@@ -4,7 +4,7 @@ import { closeStaleRuns } from "@/lib/agent";
 import { requireCtx } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { agentConfigured } from "@/lib/llm";
-import { isTrial } from "@/lib/plan";
+import { isTrial, isSiteAdmin } from "@/lib/plan";
 import { AutoRefresh, Submit } from "@/components/client";
 import { CampaignFields } from "@/components/campaign-fields";
 import { Notice, PageHeader, RunList, TrialNotice } from "@/components/ui";
@@ -62,7 +62,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           )}
           <h2 className="mb-3 mt-8 text-sm font-semibold">Activité de l'agent</h2>
           <div className="card">
-            <RunList runs={runs} />
+            <RunList runs={runs} showCost={isSiteAdmin(ctx.userEmail)} />
           </div>
         </section>
 

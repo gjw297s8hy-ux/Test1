@@ -1,4 +1,5 @@
 import type { Plan, RunType } from "@prisma/client";
+import { cache } from "react";
 import { db } from "./db";
 
 /** Lancements de l'agent par mois pour les abonnes. */
@@ -12,6 +13,11 @@ function adminEmails(): string[] {
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
+}
+
+/** Administrateur du site (ADMIN_EMAILS) : seul a voir ce que coute l'agent. */
+export function isSiteAdmin(email: string): boolean {
+  return adminEmails().includes(email.trim().toLowerCase());
 }
 
 /** Offre reelle de l'organisation : celles des administrateurs du site (ADMIN_EMAILS) comptent comme Pro. */
@@ -34,6 +40,4 @@ export async function trialUsed(orgId: string): Promise<Set<RunType>> {
   return new Set(runs.map((r) => r.type));
 }
 
-export async function isTrial(orgId: string): Promise<boolean> {
-  return (await effectivePlan(orgId)) === "FREE";
-}
+export const isTrial = cache(async (orgId: string): Promise<boolean> => (await effectivePlan(orgId)) === "FREE");

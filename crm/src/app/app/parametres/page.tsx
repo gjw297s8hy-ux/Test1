@@ -42,7 +42,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         <div className="mb-4 rounded-lg border border-brand-100 bg-brand-50 p-4 text-sm">
           <p className="font-medium text-brand-700">Invitation créée. Transmettez ce lien, valable 7 jours ; il ne sera plus affiché.</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <code className="min-w-0 flex-1 break-all rounded bg-white px-2 py-1.5 text-xs">{sp.invitation}</code>
+            <code className="min-w-0 flex-1 break-all rounded-lg bg-black/30 px-2 py-1.5 text-xs">{sp.invitation}</code>
             <CopyButton text={sp.invitation} label="Copier le lien" />
           </div>
         </div>
@@ -90,8 +90,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
 
         <div className="space-y-6">
           <section className="card">
-            <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Connexions</h2>
-            <ul className="divide-y divide-slate-100">
+            <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Connexions</h2>
+            <ul className="divide-y divide-white/[0.06]">
               <Integration name="Agent IA" ok={agentConfigured()} on="Clé API Anthropic présente." off="Ajoutez ANTHROPIC_API_KEY sur le serveur." />
               <Integration name="E-mail" ok={smtpConfigured()} on="Envoi direct depuis l'application." off="Sans SMTP_URL : l'e-mail s'ouvre dans votre messagerie." />
               <Integration name="SMS" ok={twilioConfigured("SMS")} on="Envoi direct par Twilio." off="Sans Twilio : envoi depuis votre téléphone." />
@@ -110,8 +110,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
       </div>
 
       <section className="card mt-6">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold">Équipe</h2>
-        <ul className="divide-y divide-slate-100">
+        <h2 className="border-b border-white/[0.06] px-5 py-4 font-display text-[15px] font-semibold">Équipe</h2>
+        <ul className="divide-y divide-white/[0.06]">
           {members.map((m) => (
             <li key={m.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
               <div className="min-w-0 flex-1">

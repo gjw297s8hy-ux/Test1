@@ -39,7 +39,7 @@ export const MESSAGE_STATUS_LABEL: Record<MessageStatus, string> = {
 
 export const RUN_LABEL: Record<RunType, string> = {
   FIND: "Recherche de prospects",
-  ENRICH: "Enrichissement et score",
+  ENRICH: "Approfondissement",
   DRAFT: "Rédaction",
   REPLY: "Analyse de réponse",
 };

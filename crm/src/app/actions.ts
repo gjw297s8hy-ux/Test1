@@ -442,6 +442,7 @@ async function deliver(fd: FormData, auto: boolean) {
 
   if (auto) {
     if (!canAutoSend(message.channel)) flash(back, "L'envoi automatique n'est pas configuré pour ce canal.");
+    if (await isTrial(ctx.orgId)) flash(back, "L'envoi depuis l'application est réservé aux abonnés : envoyez ce message depuis votre messagerie.");
     try {
       if (message.channel === "EMAIL") {
         if (!contact.email) throw new Error("Ce contact n'a pas d'adresse e-mail.");
