@@ -33,3 +33,13 @@ export function manualLink(
       return /^https?:\/\//.test(c.linkedinUrl) ? c.linkedinUrl : linkedinSearchUrl(c.name ?? "", c.company ?? "");
   }
 }
+
+/** Brouillon pre-rempli dans Gmail sur le web : fonctionne meme sans messagerie installee sur l'ordinateur. */
+export function gmailComposeUrl(to: string, subject: string, body: string): string {
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/** Brouillon pre-rempli dans Outlook sur le web (comptes Outlook, Hotmail, Live et Microsoft 365). */
+export function outlookComposeUrl(to: string, subject: string, body: string): string {
+  return `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
