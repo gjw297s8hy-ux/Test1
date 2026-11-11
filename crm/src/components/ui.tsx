@@ -88,3 +88,11 @@ export function TextLink({ href, children }: { href: string; children: React.Rea
     </Link>
   );
 }
+
+export function TrialNotice() {
+  return (
+    <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
+      Essai gratuit : vous pouvez lancer chaque étape une fois, sur une seule entreprise et un seul contact, pour voir comment l'agent travaille. Abonnez-vous pour prospecter sans limite.
+    </p>
+  );
+}

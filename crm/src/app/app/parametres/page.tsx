@@ -103,7 +103,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <section className="card p-4 text-sm">
             <h2 className="text-sm font-semibold">Offre</h2>
             <p className="mt-1 text-slate-600">
-              {plan === "PRO" ? "Pro : 1 000 lancements de l'agent par mois." : "Gratuite : le CRM complet, sans l'agent IA."}
+              {plan === "PRO" ? "Pro : 1 000 lancements de l'agent par mois." : "Gratuite : le CRM complet et un essai de l'agent IA sur une entreprise."}
             </p>
           </section>
         </div>
