@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Channel } from "@prisma/client";
 import { discardDraft, markMessageSent, saveDraft, sendMessageNow } from "@/app/actions";
-import { manualLink } from "@/lib/links";
+import { gmailComposeUrl, manualLink, outlookComposeUrl } from "@/lib/links";
 import { CopyButton, Submit } from "./client";
 
 const OPEN_LABEL: Record<Channel, string> = {
@@ -88,7 +88,21 @@ export function DraftEditor({
             </Submit>
           ) : (
             <>
-              {link && (
+              {channel === "EMAIL" && contact.email ? (
+                // mailto: ouvre l'application de messagerie de l'ordinateur ; sans application reglee, Chrome affiche
+                // une page vide. On propose donc d'abord Gmail et Outlook sur le web, qui fonctionnent partout.
+                <>
+                  <a className="btn" href={gmailComposeUrl(contact.email, subject, full)} target="_blank" rel="noopener noreferrer">
+                    Ouvrir dans Gmail
+                  </a>
+                  <a className="btn-ghost" href={outlookComposeUrl(contact.email, subject, full)} target="_blank" rel="noopener noreferrer">
+                    Outlook
+                  </a>
+                  <a className="btn-ghost" href={link} title="Ouvre l'application de messagerie installée sur cet ordinateur">
+                    Autre messagerie
+                  </a>
+                </>
+              ) : link && (
                 <a
                   className="btn"
                   href={link}
