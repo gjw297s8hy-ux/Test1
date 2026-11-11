@@ -42,6 +42,7 @@ export function DraftEditor({
   const [subject, setSubject] = useState(initialSubject);
   const [body, setBody] = useState(initialBody);
   const [copied, setCopied] = useState(false);
+  const [icloudCopied, setIcloudCopied] = useState(false);
   const full = channel === "EMAIL" ? body + emailFooter : body;
   const link = manualLink(channel, contact, subject, full);
   const limit = LIMIT[channel];
@@ -98,9 +99,30 @@ export function DraftEditor({
                   <a className="btn-ghost" href={outlookComposeUrl(contact.email, subject, full)} target="_blank" rel="noopener noreferrer">
                     Outlook
                   </a>
-                  <a className="btn-ghost" href={link} title="Ouvre l'application de messagerie installée sur cet ordinateur">
+                  <a
+                    className="btn-ghost"
+                    href="https://www.icloud.com/mail/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    // iCloud Mail sur le web n'accepte pas de message pre-rempli : on copie le texte a coller.
+                    onClick={() => {
+                      navigator.clipboard?.writeText(full).then(
+                        () => setIcloudCopied(true),
+                        () => {},
+                      );
+                    }}
+                  >
+                    iCloud
+                  </a>
+                  <a className="btn-ghost" href={link} title="Ouvre l'application de messagerie de l'ordinateur (Mail sur Mac et iPhone)">
                     Autre messagerie
                   </a>
+                  {icloudCopied && (
+                    <p className="basis-full rounded-xl border border-brand-100 bg-brand-50 px-3 py-2 text-xs text-brand-700">
+                      Texte copié. Dans iCloud Mail, cliquez sur « Nouveau message », collez le texte (Ctrl + V), puis indiquez le destinataire{" "}
+                      <span className="font-semibold">{contact.email}</span> et l'objet <span className="font-semibold">{subject}</span>.
+                    </p>
+                  )}
                 </>
               ) : link && (
                 <a
